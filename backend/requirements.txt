@@ -1,0 +1,25 @@
+# Web Framework
+fastapi==0.124.4
+uvicorn[standard]==0.38.0
+pydantic==2.12.5
+pydantic-settings==2.12.0
+
+# Database & Storage
+supabase==2.26.0
+
+# AI & Extraction (Anthropic Direct)
+anthropic==0.75.0
+
+# AI & Extraction (Claude Agent SDK - for session-based extraction)
+claude-agent-sdk>=0.1.17
+
+# Document Processing (OCR)
+mistralai==1.10.0
+
+# Authentication
+clerk-backend-api==4.2.0
+httpx==0.28.1
+
+# Utilities
+python-dotenv==1.2.1
+python-multipart==0.0.20

@@ -1,0 +1,90 @@
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+/lib/
+/lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+env/
+ENV/
+.venv
+
+# FastAPI / Uvicorn
+*.log
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Next.js
+.next/
+out/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Supabase local
+.supabase/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Claude Code
+.claude/settings.local.json
+.kilocode/
+
+# Git worktrees
+.worktrees/
+
+# Document uploads (will be in Supabase Storage, not local)
+/uploads/
+/documents/
+
+# Spike test artifacts (session IDs, temp files)
+backend/spikes/spike_session_id.txt
+backend/spikes/*.tmp
+backend/spikes/test_*
+
+# bv (beads viewer) local config and caches
+.bv/
