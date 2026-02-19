@@ -88,35 +88,6 @@ Using FastAPI's built-in `BackgroundTasks` for async processing instead of Celer
 
 ---
 
-## Development Status
-
-**Current Phase:** Week 1-2 - Backend Extraction Engine (85% Complete)
-
-**Completed:**
-
-- ✅ FastAPI project initialised with Supabase integration
-- ✅ Database schema (users, documents, ocr_results, extractions) with RLS policies
-- ✅ Document upload endpoint with usage limit enforcement
-- ✅ Mistral OCR integration with caching (replaced Docling for 10x speed improvement)
-- ✅ LangChain + Claude Haiku 4.5 structured extraction (auto + custom modes)
-- ✅ OCR result caching for cost-optimised re-extraction
-- ✅ Confidence scoring per extracted field
-- ✅ Test endpoints for OCR and extraction validation
-
-**In Progress:**
-
-- ⏳ Full extraction pipeline (upload → OCR → LLM → save results)
-- ⏳ Extraction status polling endpoint
-- ⏳ CSV/JSON export logic
-
-**Next Steps:**
-
-- Next.js frontend (upload flow, document library, extraction display)
-- Edit extraction results functionality
-- Production deployment (Railway + Vercel)
-
----
-
 ## Learnings & Challenges
 
 **Key Learnings:**
