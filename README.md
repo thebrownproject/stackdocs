@@ -1,149 +1,136 @@
-# Stackdocs
+# StackDocs
 
 ![Status](https://img.shields.io/badge/status-in_development-yellow)
-![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
-![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?logo=langchain&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?logo=postgresql&logoColor=white)
+![Claude Agent SDK](https://img.shields.io/badge/Claude_Agent_SDK-D97757?logo=anthropic&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)
 
-> AI-powered document data extraction application for converting unstructured documents into structured CSV/JSON data using LangChain and Claude Haiku (In Development)
-
----
+> AI-powered document extraction platform. Upload documents, extract structured data with autonomous agents, and organise results into stacks. Built with Claude Agent SDK and MCP tools.
 
 ## Overview
 
-Stackdocs is a startup idea I'm building to automate manual data entry from business documents. Users upload invoices or receipts, and the system uses AI to extract structured data (vendor names, dates, amounts, line items) into downloadable CSV/JSON formats.
+StackDocs automates manual data entry from business documents. Upload invoices, receipts, or contracts and an autonomous agent extracts structured data with confidence scores — then lets you correct results through natural language in the same session.
 
-**Core Value:** Reduces manual data entry through automated extraction.
+Documents can be grouped into **stacks** for batch extraction across multiple files into unified tables, with a canvas workspace for visual organisation.
 
-**Current Status:** Backend extraction engine complete (OCR + LLM integration working). About to commence Next.js frontend development.
+**Live at** [stackdocs.io](https://stackdocs.io) | **API** at [api.stackdocs.io](https://api.stackdocs.io)
 
----
+## Architecture
+
+```
+┌─────────────────┐     ┌─────────────────────┐     ┌──────────────┐
+│   Next.js 16    │────▶│   FastAPI Backend    │────▶│  Supabase    │
+│   (Vercel)      │     │   (DigitalOcean)     │     │  (Postgres)  │
+│                 │     │                      │     │  + Storage   │
+│  Clerk Auth     │     │  Claude Agent SDK    │     │  + Realtime  │
+│  React Flow     │     │  Mistral OCR         │     │  + RLS       │
+│  Zustand        │     │  MCP Tool Server     │     └──────────────┘
+│  shadcn/ui      │     │  SSE Streaming       │
+└─────────────────┘     └─────────────────────┘
+```
+
+**Frontend** talks directly to Supabase for reads/writes (protected by RLS). AI operations (upload, OCR, extraction, correction) route through the FastAPI backend, which runs Claude agents with scoped database tools.
 
 ## Tech Stack
 
-**Frontend:** Next.js · TypeScript · TailwindCSS <br>
-**Backend:** Python · FastAPI · LangChain <br>
-**AI/ML:** Claude Haiku 4.5 (via OpenRouter) · Mistral OCR <br>
-**Database:** Supabase (PostgreSQL · Storage · Auth) <br>
-**Infrastructure:** Background Tasks · RLS Policies · Usage Tracking
+**Frontend:** Next.js 16 (App Router) · TypeScript · TailwindCSS v4 · React Flow · Zustand · shadcn/ui · TanStack Table · Motion
 
----
+**Backend:** Python 3.11 · FastAPI · Claude Agent SDK · Mistral OCR · SSE Streaming
+
+**Infrastructure:** Supabase (PostgreSQL + Storage + Realtime + RLS) · Clerk (Auth) · DigitalOcean (Backend) · Docker · GitHub Actions CI/CD · Caddy (Reverse Proxy)
 
 ## Features
 
-### Implemented:
+### Agent System (Claude Agent SDK + MCP)
 
-- Document upload with file validation and Supabase Storage integration
-- Mistral OCR integration for fast, accurate text extraction (98.96% accuracy, <5s per document)
-- LangChain + Claude Haiku 4.5 structured output extraction with confidence scores
-- Auto mode (AI decides fields) and Custom mode (user specifies fields)
-- OCR result caching to minimise API costs on re-extraction
-- User authentication and usage limit tracking
-- Background task processing for async document handling
+- Autonomous extraction agent with 6 scoped MCP tools (read_ocr, save_extraction, set_field, delete_field, read_extraction, complete)
+- Tool factory pattern locks database access to the requesting user and document — agents cannot override tenant boundaries
+- Session-based corrections: resume a previous extraction conversation and refine results with natural language
+- Auto mode (agent decides fields) and Custom mode (user specifies fields to extract)
+- Confidence scores per field (0.0–1.0) for review
+- SSE streaming of agent reasoning and tool calls to the frontend in real time
 
-### In Progress:
+### Document Processing
 
-- Next.js frontend (upload flow, document library, extraction results display)
-- CSV/JSON export functionality
-- Edit extraction results interface
+- Upload with validation (PDF, JPEG, PNG, WebP — max 10MB)
+- Mistral OCR integration with HTML table extraction (98.96% accuracy, 5–10s per document)
+- OCR result caching — re-extract with different modes without re-OCRing
+- Background metadata generation (display name, tags, summary) via a second agent
+- Supabase Realtime subscriptions for live upload status tracking
 
-### Planned:
+### Stacks (Multi-Document Extraction)
 
-- Production deployment (Railway backend, Vercel frontend)
-- Batch upload and saved templates
+- Group related documents into stacks (e.g. "Vendor Invoices")
+- Define extraction tables with custom column schemas
+- Batch extract across all documents in a stack into unified table rows
+- Stack agent with 13 tools for table/row management
 
----
+### Frontend
 
-## Architecture & Tech Decisions
+- Floating agent card with spring animations (iOS-style expand/collapse)
+- 8 registered flows: upload, extract, create stack, edit stack, add documents, create table, manage columns, extract table
+- Dual-panel layout with resizable PDF/OCR preview
+- React Flow canvas for visual stack organisation
+- TanStack Table with sorting, filtering, and confidence indicators
+- Parallel routes for header/subbar composition (Next.js 16 pattern)
+- CSV/JSON export
 
-Built as monolithic FastAPI backend + Next.js frontend for rapid MVP delivery. Uses Supabase for auth, database, and file storage to minimise infrastructure complexity. Background task processing handles document extraction asynchronously while frontend polls for status updates.
+### Infrastructure
 
-### Key Architectural Decisions
+- Dockerised backend with multi-stage builds
+- GitHub Actions CI/CD: auto-deploy to DigitalOcean on push to `main`
+- Caddy reverse proxy with automatic HTTPS
+- Clerk JWT verification + Supabase Row-Level Security for multi-tenancy
+- Clerk webhook syncs user profiles to Supabase
 
-**Mistral OCR Over Self-Hosted Solutions**
+## How It Works
 
-Chose Mistral OCR Direct API over self-hosted Tesseract after discovering Docling (initial choice) was too slow (10-90s per document). Mistral OCR provides production-grade accuracy (98.96%), speed (5-10s per document), and cost-effectiveness (~$2 per 1,000 pages) with 128K context window for multi-page documents. This decision prioritized user experience and scalability over cost savings from self-hosting.
+```
+Upload → Mistral OCR (cached) → Claude Agent extracts fields → SSE stream to UI
+                                                                      │
+                                          User corrects via chat ◀────┘
+                                          (same session resumes)
+```
 
-**Claude Haiku 4.5 via OpenRouter**
-
-Using OpenRouter as model-agnostic LLM gateway allows swapping between providers (OpenAI, Anthropic, Google) without code changes. Currently using `anthropic/claude-haiku-4.5` for optimal cost/performance balance, with flexibility to experiment with other models based on accuracy requirements. This reduces vendor lock-in and enables rapid experimentation.
-
-**LangChain Structured Outputs**
-
-Using `with_structured_output()` with Pydantic schemas ensures type-safe extraction results with confidence scores per field. Temperature=0 for deterministic outputs. Supports both auto mode (AI decides relevant fields) and custom mode (user-specified fields), providing flexibility for different document types and use cases.
-
-**OCR Result Caching Strategy**
-
-Storing raw OCR text in `ocr_results` table allows re-extraction with different modes or custom fields without re-OCRing documents. This reduces API costs when users experiment with extraction settings and provides instant re-extraction (~2-3s vs 5-10s with OCR). Critical for user experience and cost optimization.
-
-**JSONB for Schema Flexibility**
-
-Storing `extracted_fields` as JSONB supports any document type without schema migrations. Invoices might have 10 fields, receipts might have 5, contracts might have 20 - JSONB handles all cases. Can normalize to relational tables post-MVP if query patterns require it, but flexibility is more valuable during validation phase.
-
-**FastAPI BackgroundTasks Over Celery**
-
-Using FastAPI's built-in `BackgroundTasks` for async processing instead of Celery/RabbitMQ reduces infrastructure complexity. For single-document uploads, BackgroundTasks handles 5-10s extraction times without queuing. Can migrate to Celery later if batch processing or high concurrency requires it.
-
----
-
-## Learnings & Challenges
-
-**Key Learnings:**
-
-- Architecting flexible database schemas using JSONB for unknown field structures across document types
-- Evaluating OCR solutions for production (self-hosted vs API, speed vs accuracy vs cost tradeoffs)
-- Integrating multiple AI APIs (Mistral OCR, Claude Haiku via OpenRouter) with caching strategies
-- Designing background processing patterns for async document workflows with polling-based status updates
-- Prompt engineering for structured outputs with confidence scoring and field name consistency
-
-**Challenges Solved:**
-
-- **OCR performance bottleneck:** Initially used Docling (10-90s per document), migrated to Mistral OCR (5-10s) after identifying speed as UX blocker
-- **Cost optimisation:** Implemented OCR result caching to enable re-extraction without duplicate API calls, reducing costs by ~70% for users experimenting with extraction modes
-- **Extraction accuracy:** Temperature=0 + detailed system prompts + confidence scores ensure >90% field accuracy and flag low-confidence results for user review
-- **Schema flexibility:** JSONB storage supports any document type without migrations, critical for validation with diverse document formats
-
----
+1. **Upload** — file goes to Supabase Storage, OCR runs in background via Mistral
+2. **Extract** — Claude agent reads OCR text, analyses document, saves structured fields with confidence scores
+3. **Correct** — user sends natural language instruction, agent resumes the same session and updates specific fields
+4. **Stack** — group documents, define table schema, batch-extract into rows
 
 ## Quick Start
 
 ```bash
 # Backend
 cd backend
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
+cp .env.example .env  # fill in keys
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 
-# Frontend (coming soon)
+# Frontend
 cd frontend
-npm install
-npm run dev
+cp .env.local.example .env.local  # fill in keys
+npm install && npm run dev
 ```
 
-**Environment Variables:**
+### Environment Variables
 
+**Backend:**
 ```env
-# Backend .env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-service-role-key
-OPENROUTER_API_KEY=your-key
-OPENROUTER_MODEL=anthropic/claude-haiku-4.5
+ANTHROPIC_API_KEY=sk-ant-xxx
+CLAUDE_MODEL=claude-haiku-4-5
 MISTRAL_API_KEY=your-key
+CLERK_SECRET_KEY=sk_test_xxx
 ```
 
----
-
-## Why This Project?
-
-This project demonstrates my ability to build production-ready applications from scratch:
-
-- Architect full-stack applications (database design, API patterns, frontend UX)
-- Make technical decisions under constraints (OCR provider selection, caching strategies, JSONB flexibility)
-- Integrate cutting-edge AI APIs (LangChain, Claude Haiku, Mistral OCR) in production pipelines
-- Balance accuracy, speed, and cost in ML systems
-- Build complete features end-to-end (auth, storage, background processing, API design)
-
----
+**Frontend:**
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxx
+NEXT_PUBLIC_API_URL=https://api.stackdocs.io
+```
