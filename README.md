@@ -7,7 +7,7 @@
 ![Claude Agent SDK](https://img.shields.io/badge/Claude_Agent_SDK-D97757?logo=anthropic&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)
 
-> AI-powered document extraction platform. Upload documents, extract structured data with autonomous agents, and organise results into stacks. Built with Claude Agent SDK and MCP tools.
+> AI-powered document extraction platform. Upload documents, extract structured data with autonomous agents, and organise results into stacks. Built with Claude Agent SDK.
 
 ## Overview
 
@@ -26,7 +26,7 @@ Documents can be grouped into **stacks** for batch extraction across multiple fi
 │                 │     │                      │     │  + Storage   │
 │  Clerk Auth     │     │  Claude Agent SDK    │     │  + Realtime  │
 │  React Flow     │     │  Mistral OCR         │     │  + RLS       │
-│  Zustand        │     │  MCP Tool Server     │     └──────────────┘
+│  Zustand        │     │  Custom Agent Tools  │     └──────────────┘
 │  shadcn/ui      │     │  SSE Streaming       │
 └─────────────────┘     └─────────────────────┘
 ```
@@ -43,9 +43,9 @@ Documents can be grouped into **stacks** for batch extraction across multiple fi
 
 ## Features
 
-### Agent System (Claude Agent SDK + MCP)
+### Agent System (Claude Agent SDK)
 
-- Autonomous extraction agent with 6 scoped MCP tools (read_ocr, save_extraction, set_field, delete_field, read_extraction, complete)
+- Autonomous extraction agent with 6 custom tools built on the Agent SDK (read_ocr, save_extraction, set_field, delete_field, read_extraction, complete)
 - Tool factory pattern locks database access to the requesting user and document — agents cannot override tenant boundaries
 - Session-based corrections: resume a previous extraction conversation and refine results with natural language
 - Auto mode (agent decides fields) and Custom mode (user specifies fields to extract)
@@ -65,7 +65,7 @@ Documents can be grouped into **stacks** for batch extraction across multiple fi
 - Group related documents into stacks (e.g. "Vendor Invoices")
 - Define extraction tables with custom column schemas
 - Batch extract across all documents in a stack into unified table rows
-- Stack agent with 13 tools for table/row management
+- Stack agent with 13 custom tools for table/row management
 
 ### Frontend
 
