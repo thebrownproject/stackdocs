@@ -12,7 +12,7 @@
 
 ## Overview
 
-StackDocs automates manual data entry from business documents. Upload invoices, receipts, or contracts and an autonomous agent extracts structured data with confidence scores — then lets you correct results through natural language in the same session.
+StackDocs automates manual data entry from business documents. Upload invoices, receipts, or contracts and an autonomous agent extracts structured data with confidence scores, then lets you correct results through natural language in the same session.
 
 Documents can be grouped into **stacks** for batch extraction across multiple files into unified tables, with a canvas workspace for visual organisation.
 
@@ -47,7 +47,7 @@ Documents can be grouped into **stacks** for batch extraction across multiple fi
 ### Agent System (Claude Agent SDK)
 
 - Autonomous extraction agent with 6 custom tools built on the Agent SDK (read_ocr, save_extraction, set_field, delete_field, read_extraction, complete)
-- Tool factory pattern locks database access to the requesting user and document — agents cannot override tenant boundaries
+- Tool factory pattern locks database access to the requesting user and document so agents cannot override tenant boundaries
 - Session-based corrections: resume a previous extraction conversation and refine results with natural language
 - Auto mode (agent decides fields) and Custom mode (user specifies fields to extract)
 - Confidence scores per field (0.0–1.0) for review
@@ -55,9 +55,9 @@ Documents can be grouped into **stacks** for batch extraction across multiple fi
 
 ### Document Processing
 
-- Upload with validation (PDF, JPEG, PNG, WebP — max 10MB)
+- Upload with validation (PDF, JPEG, PNG, WebP, max 10MB)
 - Mistral OCR integration with HTML table extraction (98.96% accuracy, 5–10s per document)
-- OCR result caching — re-extract with different modes without re-OCRing
+- OCR result caching allows re-extraction with different modes without re-OCRing
 - Background metadata generation (display name, tags, summary) via a second agent
 - Supabase Realtime subscriptions for live upload status tracking
 
@@ -95,10 +95,10 @@ Upload → Mistral OCR (cached) → Claude Agent extracts fields → SSE stream 
                                           (same session resumes)
 ```
 
-1. **Upload** — file goes to Supabase Storage, OCR runs in background via Mistral
-2. **Extract** — Claude agent reads OCR text, analyses document, saves structured fields with confidence scores
-3. **Correct** — user sends natural language instruction, agent resumes the same session and updates specific fields
-4. **Stack** — group documents, define table schema, batch-extract into rows
+1. **Upload**: file goes to Supabase Storage, OCR runs in background via Mistral
+2. **Extract**: Claude agent reads OCR text, analyses document, saves structured fields with confidence scores
+3. **Correct**: user sends natural language instruction, agent resumes the same session and updates specific fields
+4. **Stack**: group documents, define table schema, batch-extract into rows
 
 ## Quick Start
 
