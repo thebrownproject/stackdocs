@@ -22,6 +22,7 @@ import {
 const segmentLabels: Record<string, string> = {
   documents: 'Documents',
   stacks: 'Stacks',
+  agents: 'Agents',
   settings: 'Settings',
   upload: 'Upload',
 }
@@ -30,6 +31,7 @@ const segmentLabels: Record<string, string> = {
 const segmentIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   documents: Icons.Files,
   stacks: Icons.Stack3,
+  agents: Icons.BrandDatabricks,
   settings: Icons.Settings,
   upload: Icons.Upload,
 }

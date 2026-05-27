@@ -34,6 +34,11 @@ const data = {
           icon: Icons.Files,
         },
         {
+          title: 'Agents',
+          url: '/agents',
+          icon: Icons.BrandDatabricks,
+        },
+        {
           title: 'Stacks',
           url: '/stacks',
           icon: Icons.Stack3,
