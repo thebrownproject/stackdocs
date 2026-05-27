@@ -177,7 +177,7 @@ export function ConnectionPanel({
         <input
           ref={fileRef}
           type="file"
-          accept=".pdf,.png,.jpg,.jpeg,.webp"
+          accept=".pdf,.png,.jpg,.jpeg,.webp,.docx,.xls,.xlsx,.csv,.txt"
           className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-accent"
         />
         <Button

@@ -25,6 +25,7 @@ const FEW_SHOT = 3;
 interface SampleRow {
   id: string;
   file_path: string;
+  filename: string;
   media_type: string;
   expected_output: Record<string, unknown>;
 }
@@ -55,6 +56,7 @@ async function runOverSet(
       rules,
       fewShot,
       file: { data: bytes, mediaType: row.media_type },
+      filename: row.filename,
       tools,
       abortSignal: signal,
     });
@@ -143,7 +145,7 @@ export async function* runTraining(opts: TrainOptions): AsyncGenerator<Record<st
 
   const { data: sampleData, error } = await db
     .from("samples")
-    .select("id, file_path, media_type, expected_output")
+    .select("id, file_path, filename, media_type, expected_output")
     .eq("agent_id", agentId)
     .limit(MAX_SAMPLES);
   if (error) throw new Error(error.message);

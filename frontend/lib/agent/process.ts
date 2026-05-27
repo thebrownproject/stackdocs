@@ -62,6 +62,7 @@ export async function processDocument(
     rules: bundle.rules,
     fewShot,
     file: input.file,
+    filename: input.filename,
     tools: getAgentTools(agent.id),
   });
 

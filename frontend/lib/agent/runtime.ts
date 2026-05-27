@@ -11,6 +11,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { Output, ToolLoopAgent, stepCountIs, tool, type ToolSet } from "ai";
 import { z } from "zod";
 import type { FieldSchema } from "../harness/types";
+import { normalizeToModelInput } from "./ingest";
 import { modelId, type ModelTier } from "./models";
 import {
   describeSchema,
@@ -81,6 +82,8 @@ export interface RunAgentInput {
   /** Worked examples (ground-truth outputs from similar docs) for few-shot guidance. */
   fewShot?: Array<Record<string, unknown>>;
   file: { data: Uint8Array | URL | string; mediaType: string };
+  /** Original filename, used to detect convertible formats (docx/xlsx/csv). */
+  filename?: string;
   /** Account-specific tools (lookups/validations) merged with the built-ins. */
   tools?: ToolSet;
   modelTier?: ModelTier;
@@ -122,17 +125,23 @@ export async function runAgent(input: RunAgentInput): Promise<RunAgentResult> {
     .filter(Boolean)
     .join("\n");
 
-  const fileData = typeof input.file.data === "string" ? new URL(input.file.data) : input.file.data;
+  // Convert non-native formats (docx/xlsx/csv/...) to text; pass PDFs/images directly.
+  const doc = await normalizeToModelInput(input.file.data, input.file.mediaType, input.filename);
+  const documentPart =
+    doc.kind === "text"
+      ? { type: "text" as const, text: `Document content:\n\n${doc.text}` }
+      : {
+          type: "file" as const,
+          data: typeof doc.data === "string" ? new URL(doc.data) : doc.data,
+          mediaType: doc.mediaType,
+        };
 
   const { output, usage } = await agent.generate({
     abortSignal: input.abortSignal,
     prompt: [
       {
         role: "user",
-        content: [
-          { type: "text", text },
-          { type: "file", data: fileData, mediaType: input.file.mediaType },
-        ],
+        content: [{ type: "text", text }, documentPart],
       },
     ],
   });
