@@ -4,6 +4,7 @@
 // document + extraction, then routes by confidence (webhook vs review queue).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import "../customers"; // side-effect: register per-customer tools + destinations
 import { runAgent } from "./runtime";
 import { getAgentTools } from "./tools/registry";
 import { getDestination, type DeliveryContext } from "../adapters/registry";
