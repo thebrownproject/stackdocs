@@ -6,6 +6,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { runAgent } from "./runtime";
 import { getAgentTools } from "./tools/registry";
+import { getDestination, type DeliveryContext } from "../adapters/registry";
 import { deliverWebhook } from "../adapters/webhook";
 import { applyCalibration, type CalibrationMap } from "../harness/calibration";
 import type { FieldSchema } from "../harness/types";
@@ -108,25 +109,33 @@ export async function processDocument(
       min_confidence: calibratedMin,
       status: "pending",
     });
-  } else if (agent.webhook_url) {
-    const res = await deliverWebhook(agent.webhook_url, agent.webhook_secret, {
+  } else {
+    // Deliver high-confidence results: a registered custom destination adapter
+    // takes precedence over the default signed webhook.
+    const ctx: DeliveryContext = {
       agentId: agent.id,
       documentId,
       extractedFields: result.extractedFields,
       confidenceScores: result.confidenceScores,
       minConfidence: calibratedMin,
-    });
-    delivered = res.ok;
-    await db.from("webhook_deliveries").insert({
-      agent_id: agent.id,
-      document_id: documentId,
-      user_id: agent.user_id,
-      url: agent.webhook_url,
-      ok: res.ok,
-      status_code: res.status || null,
-      attempts: res.attempts,
-      error: res.error ?? null,
-    });
+    };
+    const adapter = getDestination(agent.id);
+    if (adapter || agent.webhook_url) {
+      const res = adapter
+        ? await adapter.deliver(ctx)
+        : await deliverWebhook(agent.webhook_url!, agent.webhook_secret, ctx);
+      delivered = res.ok;
+      await db.from("webhook_deliveries").insert({
+        agent_id: agent.id,
+        document_id: documentId,
+        user_id: agent.user_id,
+        url: adapter ? adapter.label : agent.webhook_url,
+        ok: res.ok,
+        status_code: res.status || null,
+        attempts: res.attempts,
+        error: res.error ?? null,
+      });
+    }
   }
 
   return {
