@@ -1,0 +1,2 @@
+# Drop sample documents here + an expected.json mapping each filename to its
+# ground-truth output, then run `npm run verify`. See scripts/verify-pipeline.ts.

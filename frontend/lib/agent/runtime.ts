@@ -4,7 +4,7 @@
 
 import { anthropic } from "@ai-sdk/anthropic";
 import { Output, ToolLoopAgent } from "ai";
-import type { FieldSchema } from "@/lib/harness/types";
+import type { FieldSchema } from "../harness/types";
 import { modelId, type ModelTier } from "./models";
 import {
   describeSchema,

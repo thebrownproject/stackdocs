@@ -4,8 +4,8 @@
 // explicitly per field as `{ path, value, confidence }`.
 
 import { z } from "zod";
-import { flatten, setPath } from "@/lib/harness/flatten";
-import type { FieldSchema } from "@/lib/harness/types";
+import { flatten, setPath } from "../harness/flatten";
+import type { FieldSchema } from "../harness/types";
 
 const fieldValue = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 

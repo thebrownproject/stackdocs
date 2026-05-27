@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "verify": "node --env-file=.env.local --import tsx scripts/verify-pipeline.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.79",

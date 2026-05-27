@@ -7,12 +7,12 @@
 // promote. The strong-model auto-tune step is deferred (TRESTLE-ARCHITECTURE §9).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { runAgent } from "@/lib/agent/runtime";
+import { runAgent } from "../agent/runtime";
 import { calibrate } from "./calibration";
 import { inferSchema } from "./schema-infer";
 import { scoreRun, type SampleEval } from "./scoring";
 import { splitSamples } from "./split";
-import { downloadFileBytes } from "@/lib/supabase-admin";
+import { downloadFileBytes } from "../supabase-admin";
 import type { FieldSchema } from "./types";
 
 const MAX_SAMPLES = 60; // cap per run (no queue by design — keep within function limits)
