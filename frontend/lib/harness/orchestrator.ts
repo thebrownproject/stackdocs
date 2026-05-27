@@ -7,7 +7,10 @@
 // promote. The strong-model auto-tune step is deferred (TRESTLE-ARCHITECTURE §9).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { anthropic } from "@ai-sdk/anthropic";
+import { generateText } from "ai";
 import { runAgent } from "../agent/runtime";
+import { modelId } from "../agent/models";
 import { calibrate } from "./calibration";
 import { inferSchema } from "./schema-infer";
 import { scoreRun, type SampleEval } from "./scoring";
@@ -90,6 +93,48 @@ async function writeRun(
   }
 }
 
+// TUNE step: a strong model reads the baseline failures and proposes general
+// extraction rules to fix the systematic mistakes. Returns null if nothing failed.
+async function proposeRules(
+  fieldSchema: FieldSchema,
+  evals: SampleEval[],
+  perSample: Record<string, Record<string, boolean>>,
+  signal?: AbortSignal,
+): Promise<string | null> {
+  const failures = evals
+    .map((e) => ({
+      expected: e.expected,
+      actual: e.actual,
+      failed: Object.entries(perSample[e.sampleId] ?? {})
+        .filter(([, ok]) => !ok)
+        .map(([f]) => f),
+    }))
+    .filter((x) => x.failed.length > 0)
+    .slice(0, 8);
+  if (failures.length === 0) return null;
+
+  const schemaDesc = fieldSchema.map((f) => `${f.name} (${f.type})`).join(", ");
+  const cases = failures
+    .map(
+      (x, i) =>
+        `Case ${i + 1} — wrong fields: ${x.failed.join(", ")}\n  expected: ${JSON.stringify(x.expected)}\n  extracted: ${JSON.stringify(x.actual)}`,
+    )
+    .join("\n\n");
+
+  const { text } = await generateText({
+    model: anthropic(modelId("tuning")),
+    abortSignal: signal,
+    prompt:
+      `A document-extraction agent is making mistakes. Fields: ${schemaDesc}.\n\n` +
+      `Cases where its output was wrong:\n\n${cases}\n\n` +
+      `Write concise, GENERAL extraction rules (not specific to these exact documents) that would fix the ` +
+      `systematic mistakes — where to find values, formatting/normalisation, and common confusions. ` +
+      `Return only the rules as short plain-text bullet points.`,
+  });
+  const rules = text.trim();
+  return rules.length > 0 ? rules : null;
+}
+
 export async function* runTraining(opts: TrainOptions): AsyncGenerator<Record<string, unknown>> {
   const { agentId, userId, db, signal } = opts;
 
@@ -122,7 +167,24 @@ export async function* runTraining(opts: TrainOptions): AsyncGenerator<Record<st
 
   // Build the bundle: inferred schema + few-shot exemplars from TRAIN.
   const fewShot = trainRows.slice(0, FEW_SHOT).map((r) => r.expected_output);
-  const rules: string | null = null; // strong-model rule tuning deferred to v1.1
+
+  // TUNE: propose rules from baseline failures, re-run TRAIN, keep only if improved.
+  let rules: string | null = null;
+  if (baselineScore.result.overallAccuracy < 0.99) {
+    const proposed = await proposeRules(fieldSchema, baseline.evals, baselineScore.perSample, signal);
+    if (proposed) {
+      const tuned = await runOverSet(db, fieldSchema, trainRows, fewShot, proposed, signal);
+      const tunedScore = scoreRun(fieldSchema, tuned.evals);
+      await writeRun(db, { agent_id: agentId, user_id: userId, phase: "tune", bundle_version: null }, tunedScore, trainRows, tuned.predictions);
+      if (tunedScore.result.overallAccuracy >= baselineScore.result.overallAccuracy) rules = proposed;
+      yield {
+        step: "tune",
+        overall: tunedScore.result.overallAccuracy,
+        perField: tunedScore.result.perField,
+        adopted: rules !== null,
+      };
+    }
+  }
 
   // Held-out eval over TEST with the bundle — the honest number shown before payment.
   const heldOut = await runOverSet(db, fieldSchema, testRows, fewShot, rules, signal);

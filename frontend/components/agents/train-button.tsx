@@ -16,6 +16,7 @@ interface StepEvent {
   sampleCount?: number;
   version?: number;
   accuracy?: number;
+  adopted?: boolean;
 }
 
 function describe(ev: StepEvent): string | null {
@@ -30,6 +31,8 @@ function describe(ev: StepEvent): string | null {
       return `Split ${ev.train} train / ${ev.test} test`;
     case "baseline":
       return `Baseline accuracy ${((ev.overall ?? 0) * 100).toFixed(1)}%`;
+    case "tune":
+      return `Tuned accuracy ${((ev.overall ?? 0) * 100).toFixed(1)}% — rules ${ev.adopted ? "adopted" : "discarded (no gain)"}`;
     case "held_out":
       return `Held-out accuracy ${((ev.overall ?? 0) * 100).toFixed(1)}%`;
     default:
