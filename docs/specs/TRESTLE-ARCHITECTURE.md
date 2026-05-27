@@ -27,9 +27,10 @@
 - **Frontend + API + agent runtime + harness jobs:** Next.js / TypeScript on **Vercel**
 - **Agent framework:** Vercel **AI SDK v6** (Anthropic models via our own key — no third party in the document data path)
 - **Auth:** **Clerk**
-- **State:** Postgres (Supabase or Vercel Postgres — see Open Decisions)
-- **Blobs:** Vercel Blob or Cloudflare R2 (raw documents)
-- **Training jobs:** queue/worker (**Inngest**) — training runs exceed serverless timeouts
+- **State:** **Supabase** Postgres (kept; RLS + Storage reused, no migration)
+- **Blobs:** **Supabase Storage** (`documents` bucket)
+- **Training jobs:** a single SSE-streaming Next.js route handler (`maxDuration` raised,
+  sample count capped) — no queue/Inngest. Add a queue only if batch volume demands it.
 
 ---
 
@@ -146,6 +147,6 @@ Field accuracy = `mean(passed)` over the **held-out** set. Never tune on test.
 
 ## 10. Open decisions
 
-1. **Postgres:** keep **Supabase** (already provisioned, holds data; use as plain Postgres, drop RLS/Realtime, scope in app via Clerk) vs **Vercel Postgres** (tighter all-Vercel story, but a migration). Lean: keep Supabase to avoid migration.
-2. **Blobs:** Vercel Blob vs Cloudflare R2 (R2 if AU residency needs a specific region).
-3. **Strong-model tuning orchestrator:** when to add (v1.1), and which model drives it.
+1. **Postgres:** RESOLVED — keep **Supabase** (RLS + Storage reused, no migration).
+2. **Blobs:** RESOLVED — **Supabase Storage** (`documents` bucket).
+3. **Strong-model tuning orchestrator:** still open — when to add (v1.1) and which model drives the rule-tuning step. The current orchestrator promotes a bundle of inferred schema + few-shot exemplars without LLM rule tuning.
