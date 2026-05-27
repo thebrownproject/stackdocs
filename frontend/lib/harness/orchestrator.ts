@@ -8,8 +8,9 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { anthropic } from "@ai-sdk/anthropic";
-import { generateText } from "ai";
+import { generateText, type ToolSet } from "ai";
 import { runAgent } from "../agent/runtime";
+import { getAgentTools } from "../agent/tools/registry";
 import { modelId } from "../agent/models";
 import { calibrate } from "./calibration";
 import { inferSchema } from "./schema-infer";
@@ -41,6 +42,7 @@ async function runOverSet(
   rows: SampleRow[],
   fewShot: Array<Record<string, unknown>>,
   rules: string | null,
+  tools: ToolSet | undefined,
   signal?: AbortSignal,
 ): Promise<{ evals: SampleEval[]; predictions: Map<string, { extractedFields: Record<string, unknown>; confidenceScores: Record<string, unknown>; minConfidence: number }> }> {
   const evals: SampleEval[] = [];
@@ -53,6 +55,7 @@ async function runOverSet(
       rules,
       fewShot,
       file: { data: bytes, mediaType: row.media_type },
+      tools,
       abortSignal: signal,
     });
     evals.push({ sampleId: row.id, expected: row.expected_output, actual: result.extractedFields });
@@ -150,6 +153,9 @@ export async function* runTraining(opts: TrainOptions): AsyncGenerator<Record<st
   }
   yield { step: "load", sampleCount: samples.length };
 
+  // Same custom tools used in production, so accuracy is measured under prod conditions.
+  const tools = getAgentTools(agentId);
+
   const fieldSchema = inferSchema(samples.map((s) => ({ id: s.id, expectedOutput: s.expected_output })));
   yield { step: "schema_infer", fieldSchema };
 
@@ -160,7 +166,7 @@ export async function* runTraining(opts: TrainOptions): AsyncGenerator<Record<st
   yield { step: "split", train: trainRows.length, test: testRows.length };
 
   // Baseline over TRAIN (no rules, no few-shot) — the starting accuracy.
-  const baseline = await runOverSet(db, fieldSchema, trainRows, [], null, signal);
+  const baseline = await runOverSet(db, fieldSchema, trainRows, [], null, tools, signal);
   const baselineScore = scoreRun(fieldSchema, baseline.evals);
   await writeRun(db, { agent_id: agentId, user_id: userId, phase: "baseline", bundle_version: null }, baselineScore, trainRows, baseline.predictions);
   yield { step: "baseline", overall: baselineScore.result.overallAccuracy, perField: baselineScore.result.perField };
@@ -173,7 +179,7 @@ export async function* runTraining(opts: TrainOptions): AsyncGenerator<Record<st
   if (baselineScore.result.overallAccuracy < 0.99) {
     const proposed = await proposeRules(fieldSchema, baseline.evals, baselineScore.perSample, signal);
     if (proposed) {
-      const tuned = await runOverSet(db, fieldSchema, trainRows, fewShot, proposed, signal);
+      const tuned = await runOverSet(db, fieldSchema, trainRows, fewShot, proposed, tools, signal);
       const tunedScore = scoreRun(fieldSchema, tuned.evals);
       await writeRun(db, { agent_id: agentId, user_id: userId, phase: "tune", bundle_version: null }, tunedScore, trainRows, tuned.predictions);
       if (tunedScore.result.overallAccuracy >= baselineScore.result.overallAccuracy) rules = proposed;
@@ -187,7 +193,7 @@ export async function* runTraining(opts: TrainOptions): AsyncGenerator<Record<st
   }
 
   // Held-out eval over TEST with the bundle — the honest number shown before payment.
-  const heldOut = await runOverSet(db, fieldSchema, testRows, fewShot, rules, signal);
+  const heldOut = await runOverSet(db, fieldSchema, testRows, fewShot, rules, tools, signal);
   const heldOutScore = scoreRun(fieldSchema, heldOut.evals);
 
   // Calibrate from held-out (confidence, passed) pairs.

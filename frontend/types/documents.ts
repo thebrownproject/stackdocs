@@ -1,4 +1,10 @@
-export type DocumentStatus = "processing" | "ocr_complete" | "completed" | "failed";
+export type DocumentStatus =
+  | "processing"
+  | "ocr_complete"
+  | "completed"
+  | "extracted"
+  | "needs_review"
+  | "failed";
 
 export interface Document {
   id: string;
@@ -8,4 +14,5 @@ export interface Document {
   status: DocumentStatus;
   uploaded_at: string;
   agent_id: string | null;
+  agent_name: string | null;
 }

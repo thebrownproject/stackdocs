@@ -52,6 +52,17 @@ export interface ReviewItem {
   filename: string | null;
 }
 
+export interface WebhookDelivery {
+  id: string;
+  document_id: string | null;
+  url: string;
+  ok: boolean;
+  status_code: number | null;
+  attempts: number;
+  error: string | null;
+  created_at: string;
+}
+
 export interface PredictionRow {
   sampleId: string;
   filename: string | null;

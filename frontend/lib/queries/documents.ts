@@ -6,7 +6,7 @@ export async function getDocuments(): Promise<Document[]> {
 
   const { data, error } = await supabase
     .from("documents")
-    .select("id, filename, mime_type, file_size_bytes, status, uploaded_at, agent_id")
+    .select("id, filename, mime_type, file_size_bytes, status, uploaded_at, agent_id, agents(name)")
     .order("uploaded_at", { ascending: false });
 
   if (error) {
@@ -14,13 +14,17 @@ export async function getDocuments(): Promise<Document[]> {
     return [];
   }
 
-  return (data ?? []).map((doc) => ({
-    id: doc.id,
-    filename: doc.filename,
-    mime_type: doc.mime_type,
-    file_size_bytes: doc.file_size_bytes,
-    status: doc.status as DocumentStatus,
-    uploaded_at: doc.uploaded_at,
-    agent_id: doc.agent_id,
-  }));
+  return (data ?? []).map((doc) => {
+    const agent = (Array.isArray(doc.agents) ? doc.agents[0] : doc.agents) as { name?: string } | null;
+    return {
+      id: doc.id,
+      filename: doc.filename,
+      mime_type: doc.mime_type,
+      file_size_bytes: doc.file_size_bytes,
+      status: doc.status as DocumentStatus,
+      uploaded_at: doc.uploaded_at,
+      agent_id: doc.agent_id,
+      agent_name: agent?.name ?? null,
+    };
+  });
 }

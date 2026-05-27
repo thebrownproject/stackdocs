@@ -5,6 +5,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { runAgent } from "./runtime";
+import { getAgentTools } from "./tools/registry";
 import { deliverWebhook } from "../adapters/webhook";
 import { applyCalibration, type CalibrationMap } from "../harness/calibration";
 import type { FieldSchema } from "../harness/types";
@@ -61,6 +62,7 @@ export async function processDocument(
     rules: bundle.rules,
     fewShot,
     file: input.file,
+    tools: getAgentTools(agent.id),
   });
 
   const calibratedMin = applyCalibration(bundle.calibration_map as CalibrationMap | null, result.minConfidence);
@@ -114,6 +116,16 @@ export async function processDocument(
       minConfidence: calibratedMin,
     });
     delivered = res.ok;
+    await db.from("webhook_deliveries").insert({
+      agent_id: agent.id,
+      document_id: documentId,
+      user_id: agent.user_id,
+      url: agent.webhook_url,
+      ok: res.ok,
+      status_code: res.status || null,
+      attempts: res.attempts,
+      error: res.error ?? null,
+    });
   }
 
   return {

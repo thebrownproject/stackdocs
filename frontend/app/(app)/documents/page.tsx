@@ -9,12 +9,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import * as Icons from "@/components/icons";
+import type { DocumentStatus } from "@/types/documents";
 
 function formatBytes(bytes: number): string {
   if (!bytes) return "—";
   const units = ["B", "KB", "MB", "GB"];
   const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   return `${(bytes / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+function statusVariant(status: DocumentStatus): "default" | "secondary" | "destructive" | "outline" {
+  if (status === "needs_review") return "destructive";
+  if (status === "failed") return "destructive";
+  if (status === "extracted" || status === "completed") return "secondary";
+  return "outline";
 }
 
 export default async function DocumentsPage() {
@@ -36,6 +44,7 @@ export default async function DocumentsPage() {
         <TableHeader>
           <TableRow>
             <TableHead>Filename</TableHead>
+            <TableHead>Agent</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Size</TableHead>
             <TableHead className="text-right">Uploaded</TableHead>
@@ -45,8 +54,9 @@ export default async function DocumentsPage() {
           {documents.map((doc) => (
             <TableRow key={doc.id}>
               <TableCell className="font-medium">{doc.filename}</TableCell>
+              <TableCell className="text-muted-foreground">{doc.agent_name ?? "—"}</TableCell>
               <TableCell>
-                <Badge variant="outline">{doc.status}</Badge>
+                <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
               </TableCell>
               <TableCell className="text-right tabular-nums">{formatBytes(doc.file_size_bytes)}</TableCell>
               <TableCell className="text-right text-muted-foreground">

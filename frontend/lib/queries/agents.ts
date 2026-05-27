@@ -11,6 +11,7 @@ import type {
   FieldSchemaEntry,
   PredictionRow,
   ReviewItem,
+  WebhookDelivery,
 } from "@/types/agents";
 
 function sampleCount(samples: unknown): number {
@@ -105,6 +106,24 @@ export const getAgentFailures = cache(async function getAgentFailures(
     fields,
     rows,
   };
+});
+
+// Recent webhook delivery attempts for an agent (most recent first).
+export const getAgentDeliveries = cache(async function getAgentDeliveries(
+  agentId: string,
+): Promise<WebhookDelivery[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from("webhook_deliveries")
+    .select("id, document_id, url, ok, status_code, attempts, error, created_at")
+    .eq("agent_id", agentId)
+    .order("created_at", { ascending: false })
+    .limit(10);
+  if (error) {
+    console.error("Error fetching webhook deliveries:", error);
+    return [];
+  }
+  return (data ?? []) as WebhookDelivery[];
 });
 
 export const getAgent = cache(async function getAgent(id: string): Promise<AgentDetail | null> {
