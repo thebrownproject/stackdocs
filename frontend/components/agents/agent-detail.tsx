@@ -9,6 +9,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import * as Icons from "@/components/icons";
+import { SampleUpload } from "@/components/agents/sample-upload";
+import { TrainButton } from "@/components/agents/train-button";
+import { ConnectionPanel } from "@/components/agents/connection-panel";
+import { ReviewResolve } from "@/components/agents/review-resolve";
 import type { AgentDetail, AgentStatus } from "@/types/agents";
 
 const STATUS_VARIANT: Record<AgentStatus, "default" | "secondary" | "outline"> = {
@@ -78,6 +82,39 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
             <CardTitle className="text-sm">Samples</CardTitle>
           </CardHeader>
           <CardContent className="text-3xl tabular-nums">{agent.sample_count}</CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Train</CardTitle>
+            <CardDescription>Add labelled samples, then train to produce a measured bundle.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <SampleUpload agentId={agent.id} />
+            <TrainButton agentId={agent.id} disabled={agent.sample_count < 2} />
+            {agent.sample_count < 2 && (
+              <p className="text-xs text-muted-foreground">Add at least 2 samples to train.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Connections</CardTitle>
+            <CardDescription>How documents reach this agent and where results go.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ConnectionPanel
+              agentId={agent.id}
+              hasApiKey={agent.has_api_key}
+              webhookUrl={agent.webhook_url}
+              hasWebhookSecret={agent.has_webhook_secret}
+              inboundToken={agent.inbound_email_token}
+              hasActiveBundle={Boolean(agent.active_bundle_version)}
+            />
+          </CardContent>
         </Card>
       </div>
 
@@ -159,6 +196,7 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
                   <TableHead>Reason</TableHead>
                   <TableHead className="text-right">Min confidence</TableHead>
                   <TableHead className="text-right">Received</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -168,6 +206,14 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
                     <TableCell>{item.reason}</TableCell>
                     <TableCell className="text-right tabular-nums">{pct(item.min_confidence)}</TableCell>
                     <TableCell className="text-right text-muted-foreground">{dateTime(item.created_at)}</TableCell>
+                    <TableCell className="text-right">
+                      <ReviewResolve
+                        agentId={agent.id}
+                        reviewId={item.id}
+                        label={item.filename ?? item.document_id}
+                        fieldSchema={agent.field_schema}
+                      />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
