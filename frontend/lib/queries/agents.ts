@@ -47,7 +47,7 @@ export const getAgent = cache(async function getAgent(id: string): Promise<Agent
 
   const { data: agent, error } = await supabase
     .from("agents")
-    .select("id, name, status, active_bundle_version, accuracy_summary, created_at, webhook_url, api_key_hash, samples(count)")
+    .select("id, name, status, active_bundle_version, accuracy_summary, created_at, webhook_url, webhook_secret, api_key_hash, inbound_email_token, samples(count)")
     .eq("id", id)
     .single();
 
@@ -103,6 +103,8 @@ export const getAgent = cache(async function getAgent(id: string): Promise<Agent
     created_at: agent.created_at,
     sample_count: sampleCount(agent.samples),
     webhook_url: agent.webhook_url,
+    has_webhook_secret: Boolean(agent.webhook_secret),
+    inbound_email_token: agent.inbound_email_token ?? null,
     has_api_key: Boolean(agent.api_key_hash),
     field_schema: (activeBundle?.field_schema ?? null) as FieldSchemaEntry[] | null,
     eval_runs: (runsResult.data ?? []) as EvalRun[],

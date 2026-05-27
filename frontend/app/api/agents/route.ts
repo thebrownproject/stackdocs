@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { generateApiKey } from "@/lib/auth/api-key";
@@ -38,6 +39,7 @@ export async function POST(req: Request) {
       name,
       status: "draft",
       api_key_hash: hash,
+      inbound_email_token: randomBytes(6).toString("hex"),
       webhook_url: typeof body.webhookUrl === "string" ? body.webhookUrl : null,
       webhook_secret: typeof body.webhookSecret === "string" ? body.webhookSecret : null,
     })

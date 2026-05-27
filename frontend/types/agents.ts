@@ -54,6 +54,8 @@ export interface ReviewItem {
 
 export interface AgentDetail extends AgentSummary {
   webhook_url: string | null;
+  has_webhook_secret: boolean;
+  inbound_email_token: string | null;
   has_api_key: boolean;
   field_schema: FieldSchemaEntry[] | null;
   eval_runs: EvalRun[];
