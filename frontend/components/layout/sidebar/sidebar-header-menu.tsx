@@ -4,7 +4,6 @@ import * as React from "react"
 import { useTheme } from "next-themes"
 import * as Icons from "@/components/icons"
 
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,17 +20,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { GlobalSearchDialog } from "@/components/layout/global-search-dialog"
-import { useAgentStore, initialUploadData } from "@/components/agent"
 
 export function SidebarHeaderMenu() {
   const { theme, setTheme } = useTheme()
-  const [searchOpen, setSearchOpen] = React.useState(false)
-  const openFlow = useAgentStore((state) => state.openFlow)
 
   return (
     <>
-      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
       <SidebarHeader className="h-[47px] flex flex-row items-center justify-between gap-2 px-2 py-0">
         {/* Logo + Name + Dropdown */}
         <DropdownMenu>
@@ -93,42 +87,6 @@ export function SidebarHeaderMenu() {
             </DropdownMenuSub>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {/* Action buttons */}
-        <div className="flex items-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                onClick={() => setSearchOpen(true)}
-              >
-                <Icons.Search className="size-4" />
-                <span className="sr-only">Search</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Search (⌘K)</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8"
-                onClick={() => openFlow({ type: 'upload', step: 'dropzone', data: initialUploadData })}
-              >
-                <Icons.Upload className="size-4" />
-                <span className="sr-only">Upload</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Upload document</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
       </SidebarHeader>
     </>
   )
