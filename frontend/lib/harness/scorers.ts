@@ -42,8 +42,8 @@ function parseDate(v: unknown): string | null {
   // (which would read slash dates as US month-first).
   const m = s.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})$/);
   if (m) {
-    let [, d, mo, y] = m;
-    if (y.length === 2) y = "20" + y;
+    const [, d, mo, rawY] = m;
+    const y = rawY.length === 2 ? "20" + rawY : rawY;
     const dt = new Date(Number(y), Number(mo) - 1, Number(d));
     return Number.isNaN(dt.getTime()) ? null : dt.toISOString().slice(0, 10);
   }
