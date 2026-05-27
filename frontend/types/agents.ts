@@ -52,6 +52,23 @@ export interface ReviewItem {
   filename: string | null;
 }
 
+export interface PredictionRow {
+  sampleId: string;
+  filename: string | null;
+  perFieldPassed: Record<string, boolean>;
+  expected: Record<string, unknown>;
+  output: Record<string, unknown>;
+}
+
+export interface FailureReport {
+  runId: string;
+  phase: string;
+  overallAccuracy: number | null;
+  perField: Record<string, { passed: number; total: number; accuracy: number; scorer: string }>;
+  fields: string[];
+  rows: PredictionRow[];
+}
+
 export interface AgentDetail extends AgentSummary {
   webhook_url: string | null;
   has_webhook_secret: boolean;

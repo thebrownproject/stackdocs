@@ -33,7 +33,7 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
   const perField = agent.accuracy_summary?.per_field ?? {};
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <h1 className="text-lg font-semibold">{agent.name}</h1>
         <Badge variant={STATUS_VARIANT[agent.status]}>{agent.status}</Badge>

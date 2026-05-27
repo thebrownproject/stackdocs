@@ -7,7 +7,9 @@ import type {
   AgentStatus,
   AgentSummary,
   EvalRun,
+  FailureReport,
   FieldSchemaEntry,
+  PredictionRow,
   ReviewItem,
 } from "@/types/agents";
 
@@ -41,6 +43,69 @@ export async function getAgents(): Promise<AgentSummary[]> {
     sample_count: sampleCount(a.samples),
   }));
 }
+
+// Per-sample predictions from the most recent eval run — the "where did it fail"
+// drilldown. Prefers the held-out run (TEST), falling back to the latest run.
+export const getAgentFailures = cache(async function getAgentFailures(
+  agentId: string,
+): Promise<FailureReport | null> {
+  const supabase = await createServerSupabaseClient();
+
+  const { data: heldOut } = await supabase
+    .from("eval_runs")
+    .select("id, phase, overall_accuracy, per_field_scores")
+    .eq("agent_id", agentId)
+    .eq("phase", "held_out")
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let run = heldOut;
+  if (!run) {
+    const { data: latest } = await supabase
+      .from("eval_runs")
+      .select("id, phase, overall_accuracy, per_field_scores")
+      .eq("agent_id", agentId)
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    run = latest;
+  }
+  if (!run) return null;
+
+  const { data: preds } = await supabase
+    .from("predictions")
+    .select("sample_id, output, per_field_passed, samples(filename, expected_output)")
+    .eq("eval_run_id", run.id);
+
+  const rows: PredictionRow[] = (preds ?? []).map((p) => {
+    const sample = (Array.isArray(p.samples) ? p.samples[0] : p.samples) as
+      | { filename?: string; expected_output?: Record<string, unknown> }
+      | null;
+    return {
+      sampleId: p.sample_id,
+      filename: sample?.filename ?? null,
+      perFieldPassed: (p.per_field_passed ?? {}) as Record<string, boolean>,
+      expected: (sample?.expected_output ?? {}) as Record<string, unknown>,
+      output: (p.output ?? {}) as Record<string, unknown>,
+    };
+  });
+
+  const perField = (run.per_field_scores ?? {}) as FailureReport["perField"];
+  const fields =
+    Object.keys(perField).length > 0
+      ? Object.keys(perField)
+      : Array.from(new Set(rows.flatMap((r) => Object.keys(r.perFieldPassed))));
+
+  return {
+    runId: run.id,
+    phase: run.phase,
+    overallAccuracy: run.overall_accuracy,
+    perField,
+    fields,
+    rows,
+  };
+});
 
 export const getAgent = cache(async function getAgent(id: string): Promise<AgentDetail | null> {
   const supabase = await createServerSupabaseClient();
