@@ -5,7 +5,6 @@ import * as React from 'react'
 import * as Icons from '@/components/icons'
 import { UserButton } from '@clerk/nextjs'
 import { NavMain } from '@/components/layout/sidebar/nav-main'
-import { NavProjects } from '@/components/layout/sidebar/nav-projects'
 import { SidebarHeaderMenu } from '@/components/layout/sidebar/sidebar-header-menu'
 import {
   Sidebar,
@@ -34,26 +33,23 @@ const data = {
           icon: Icons.Files,
         },
         {
-          title: 'Stacks',
-          url: '/stacks',
-          icon: Icons.Stack3,
+          title: 'Agents',
+          url: '/agents',
+          icon: Icons.BrandDatabricks,
         },
       ],
     },
   ],
 }
 
-interface AppSidebarClientProps extends React.ComponentProps<typeof Sidebar> {
-  stacks: { id: string; name: string }[]
-}
+type AppSidebarClientProps = React.ComponentProps<typeof Sidebar>
 
-export function AppSidebarClient({ stacks, ...props }: AppSidebarClientProps) {
+export function AppSidebarClient(props: AppSidebarClientProps) {
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeaderMenu />
       <SidebarContent className="gap-0">
         <NavMain items={data.navMain} />
-        <NavProjects stacks={stacks} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>

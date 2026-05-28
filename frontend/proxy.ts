@@ -7,6 +7,8 @@ const isPublicRoute = createRouteMatcher([
   '/about',
   '/contact',
   '/api/webhooks/clerk',
+  // Embeddable inference endpoint — authenticated by agent API key, not Clerk.
+  '/api/extract',
 ])
 
 export function proxy(req: NextRequest, event: NextFetchEvent) {
