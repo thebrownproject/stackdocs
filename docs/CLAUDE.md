@@ -10,9 +10,11 @@
 ### Completing Features
 1. Finish execution via `/mission` (solo, orchestrated, or ralph modes)
 2. Close tasks: `bd close <id>`
-3. **Update reference docs** (`specs/ARCHITECTURE.md`, `specs/SCHEMA.md`) to reflect new reality
+3. **Update reference docs** (`specs/TRESTLE-ARCHITECTURE.md`, the `supabase/migrations/`) to reflect new reality
 
-> **Legacy:** Old plan documents archived at `docs/archive/plans/` (read-only reference)
+> **Legacy:** Old plan documents archived at `docs/archive/plans/`, and the
+> pre-Trestle Stackdocs specs (PRD/ARCHITECTURE/SCHEMA) at `docs/archive/specs/`
+> (read-only reference).
 
 ---
 
@@ -37,9 +39,10 @@ grep "^## Session.*OCR\|^## Session.*Migration" .space-agents/comms/capcom.md
 | I need to know...              | Read this                                    |
 |--------------------------------|----------------------------------------------|
 | What feature to build next     | Beads - `bd ready`, `bd list`                |
-| Why we're building it          | `specs/PRD.md`                               |
-| How the system fits together   | `specs/ARCHITECTURE.md`                      |
-| What tables/columns exist      | `specs/SCHEMA.md`                            |
+| Why we're building it (product)| root `README.md` + `docs/superpowers/specs/` |
+| How the system fits together   | `specs/TRESTLE-ARCHITECTURE.md`              |
+| What tables/columns exist      | `supabase/migrations/` (012+ = Trestle line) |
+| How we get customers (GTM)     | `docs/marketing/GTM-OUTREACH-PLAYBOOK.md`    |
 | What happened last session     | `.space-agents/comms/capcom.md` (grep only)  |
 | Current issues/ideas           | Beads - `bd list`, `bd ready`                |
 
@@ -51,13 +54,17 @@ grep "^## Session.*OCR\|^## Session.*Migration" .space-agents/comms/capcom.md
 docs/
 ├── CLAUDE.md              # This file - planning workflow
 ├── specs/                 # System specifications
-│   ├── ARCHITECTURE.md    # System design
-│   ├── SCHEMA.md          # Database schema
-│   └── PRD.md             # Product requirements
+│   └── TRESTLE-ARCHITECTURE.md   # Current system design (source of truth)
+├── superpowers/           # Ship/defer specs + implementation plans
+│   ├── specs/             # e.g. autoresearch-loop, GTM tier 1/2
+│   └── plans/             # task-by-task implementation plans
+├── marketing/             # GTM playbook, design, landing assets
 ├── archive/               # Legacy docs (read-only reference)
 │   ├── plans/             # Old kanban-style plans
-│   └── sessions/          # Old session notes (DEV-NOTES.md)
-└── marketing/             # Marketing assets
+│   ├── sessions/          # Old session notes (DEV-NOTES.md)
+│   ├── specs/             # Pre-Trestle Stackdocs PRD/ARCHITECTURE/SCHEMA
+│   └── marketing/         # Stacks-era marketing strategy
+└── (schema lives in supabase/migrations/, not docs/)
 
 .space-agents/
 ├── comms/
