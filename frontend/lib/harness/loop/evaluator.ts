@@ -61,12 +61,19 @@ export async function evaluate(
 /** Production `runOne`: downloads the doc and runs a fresh agent session. */
 export function makeLiveRunOne(db: SupabaseClient, agentId: string): EvaluatorDeps["runOne"] {
   const tools = getAgentTools(agentId);
-  return async (sample, bundle) => {
+  return async (sample, bundle, sealed) => {
     const bytes = await downloadFileBytes(db, sample.filePath);
+    // Resolve the bundle's few-shot ids into example outputs. Exemplars are drawn
+    // ONLY from the sealed train split (never the held-out set), so few-shot
+    // selection cannot leak the held-out answers it is being scored against.
+    const trainById = new Map(sealed.train.map((s) => [s.id, s.expectedOutput]));
+    const fewShot = bundle.fewShotSampleIds
+      .map((id) => trainById.get(id))
+      .filter((ex): ex is Record<string, unknown> => ex !== undefined);
     const res = await runAgent({
       fieldSchema: bundle.fieldSchema,
       rules: bundle.rules,
-      fewShot: [], // few-shot expected-output resolution happens in setup/CLI wiring
+      fewShot,
       file: { data: bytes, mediaType: sample.mediaType },
       filename: sample.filename,
       tools,

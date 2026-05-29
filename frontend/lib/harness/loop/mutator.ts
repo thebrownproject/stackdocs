@@ -40,12 +40,22 @@ function buildPrompt(state: LoopState): string {
   const avoid = state.whatNotToTry.length
     ? `\nApproaches already tried and discarded (do NOT repeat):\n${state.whatNotToTry.map((h) => `  - ${h}`).join("\n")}`
     : "";
+  // Few-shot exemplars may only be chosen from the train split (held-out ids are
+  // never valid). Surface the available ids so "fewShotSampleIds" is a usable lever.
+  const available = state.sealed.train.slice(0, 12).map((s) => s.id);
+  const currentFewShot = state.best.fewShotSampleIds.length
+    ? state.best.fewShotSampleIds.join(", ")
+    : "(none)";
+  const fewShotInfo = available.length
+    ? `\nAvailable few-shot sample ids (train split only): ${available.join(", ")}\nCurrently used as few-shot: ${currentFewShot}`
+    : "";
   return [
     `You are tuning a document-extraction agent. Goal: raise held-out accuracy.`,
     state.sealed.strategyDoc ? `\nStrategy:\n${state.sealed.strategyDoc}` : "",
     `\nCurrent overall accuracy: ${(state.lastResult.score * 100).toFixed(1)}%`,
     `Per-field accuracy:\n${fields}`,
     `\nCurrent rules:\n${state.best.rules ?? "(none)"}`,
+    fewShotInfo,
     avoid,
     `\nPropose exactly ONE change targeting the weakest field or biggest failure cluster.`,
     `You may change: "rules" (string), "fewShotSampleIds" (array of sample ids), or`,
