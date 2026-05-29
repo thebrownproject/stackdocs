@@ -1,6 +1,6 @@
-# Product Naming — open decision (revisit later)
+# Product Naming, open decision (revisit later)
 
-**Status:** Parked — 2026-05-29. Decision owner: Fraser.
+**Status:** Parked, 2026-05-29. Decision owner: Fraser.
 
 ## Current call
 
@@ -10,7 +10,7 @@
   (`frontend/app/page.tsx`), the GTM outreach playbook, and the `stackdocs.io`
   domain.
 - **"Trestle"** remains an **internal codename** for the rebuilt product line and
-  still appears in engineering docs and identifiers — intentionally left as-is for
+  still appears in engineering docs and identifiers, intentionally left as-is for
   now (not worth a churny rename):
   - `docs/specs/TRESTLE-ARCHITECTURE.md`
   - `README.md` (titled "Trestle"), `frontend/CLAUDE.md`

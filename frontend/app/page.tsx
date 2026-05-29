@@ -79,7 +79,7 @@ export default function HomePage() {
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-[var(--color-light-steel)]">
           Stackdocs builds an extraction{" "}
-          <span className="text-foreground">agent tuned to your documents</span> —
+          <span className="text-foreground">agent tuned to your documents</span>,
           processing them at high, measured accuracy and feeding the data straight
           into the systems you already use. No rules to write, no manual data entry.
         </p>
@@ -90,7 +90,7 @@ export default function HomePage() {
           </Button>
         </div>
         <p className="mt-6 text-sm text-muted-foreground">
-          Built for teams drowning in paperwork — lands in QuickBooks, Procore,
+          Built for teams drowning in paperwork. Lands in QuickBooks, Procore,
           AppFolio &amp; more.
         </p>
       </section>
@@ -111,12 +111,12 @@ export default function HomePage() {
               {
                 step: "02",
                 title: "We tune a processor",
-                body: "An eval harness tunes an agent to your documents and reports a held-out accuracy number — the real score on documents it never saw.",
+                body: "An eval harness tunes an agent to your documents and reports a held-out accuracy number: the real score on documents it never saw.",
               },
               {
                 step: "03",
                 title: "Documents flow in",
-                body: "High-confidence extractions land straight in your system. The uncertain tail routes to human review — nothing wrong slips through silently.",
+                body: "High-confidence extractions land straight in your system. The uncertain tail routes to human review, so nothing wrong slips through silently.",
               },
             ].map((s) => (
               <div
@@ -145,11 +145,11 @@ export default function HomePage() {
           {[
             {
               title: "Construction & trades",
-              body: "Subcontractor invoices, progress claims, lien waivers, COIs and timesheets — into QuickBooks, Sage, Foundation, Procore or Buildertrend.",
+              body: "Subcontractor invoices, progress claims, lien waivers, COIs and timesheets, straight into QuickBooks, Sage, Foundation, Procore or Buildertrend.",
             },
             {
               title: "Property management",
-              body: "AP invoices, leases, rental applications, COIs and maintenance bills — into AppFolio, Buildium or Yardi.",
+              body: "AP invoices, leases, rental applications, COIs and maintenance bills, straight into AppFolio, Buildium or Yardi.",
             },
           ].map((c) => (
             <div
@@ -172,12 +172,12 @@ export default function HomePage() {
           <div className="mx-auto mt-10 grid max-w-3xl gap-5">
             {[
               {
-                title: "Line items and your formats — not just headers",
+                title: "Line items and your formats, not just headers",
                 body: "Generic capture tools read vendor, date and total. Stackdocs is tuned to your actual documents, including line items and non-standard layouts they choke on.",
               },
               {
                 title: "A measured number, not a promise",
-                body: "You see held-out accuracy on your own documents before you commit — and you set the confidence threshold for what goes straight through.",
+                body: "You see held-out accuracy on your own documents before you commit, and you set the confidence threshold for what goes straight through.",
               },
               {
                 title: "Human review for the uncertain tail",
@@ -199,7 +199,7 @@ export default function HomePage() {
       {/* Final CTA */}
       <section className="mx-auto max-w-3xl px-6 py-24 text-center">
         <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          See your accuracy number — free.
+          See your accuracy number, free.
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-[var(--color-light-steel)]">
           Send a few documents you key by hand. We&apos;ll send back a report showing
@@ -214,7 +214,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
-          <span>Stackdocs — measured-accuracy document extraction</span>
+          <span>Stackdocs · measured-accuracy document extraction</span>
           <SignedOut>
             <SignInButton mode="modal">
               <button className="hover:text-foreground">Sign in</button>
