@@ -10,6 +10,8 @@ Go-to-market and landing-page assets for Stackdocs.
 | File | Purpose |
 |------|---------|
 | `GTM-OUTREACH-PLAYBOOK.md` | Current customer-acquisition playbook (forward-deployed, audit-led; construction + property-management SMBs) |
+| `LINKEDIN-PROFILE.md` | Headline, About, Featured and posting copy for the outreach motion |
+| `EXAMPLE-AUDIT-REPORT.md` | Worked example of the audit deliverable (the Featured proof asset) |
 | `TALLY-AUDIT-FORM-SETUP.md` | Step-by-step setup for the free-accuracy-audit intake form |
 | `DESIGN-INSPIRATION.md` | Visual references for landing page design |
 

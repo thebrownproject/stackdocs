@@ -68,7 +68,7 @@ export function AuditReport({ audit }: { audit: AuditData }) {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-8">
         <header className="flex flex-col gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Trestle accuracy audit</span>
+            <span>Stackdocs accuracy audit</span>
             <span>{audit.eval_run.completed_at ? new Date(audit.eval_run.completed_at).toLocaleDateString() : ""}</span>
           </div>
           <div className="flex flex-wrap items-end justify-between gap-4">
