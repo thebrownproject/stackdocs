@@ -50,6 +50,18 @@ Every deferred item must preserve the **frozen-evaluator boundary** (ship spec �
 
 **Prereq:** the bundle tree already stores `parent_version` (ship spec §5), so this is additive — no migration churn.
 
+**External reference:** GEPA (`github.com/gepa-ai/gepa`) is the canonical implementation of this Pareto-frontier idea (candidates specialised per task subset; "system-aware merge" of two Pareto-optimal candidates is a later follow-on). See `2026-05-29-related-work-gepa-skillopt.md` for the full comparison. Port the concept natively in TS — do not take the (Python/DSPy) dependency.
+
+---
+
+## D11. Train / val / test three-way split — *cheap, trust-critical; do early*
+
+**Source:** Microsoft SkillOpt (`github.com/microsoft/SkillOpt`), which trains against a `val` split and holds `test` back. See `2026-05-29-related-work-gepa-skillopt.md`.
+
+**Problem:** the MVP splits train / held-out only. The loop both tunes against and is scored on the same held-out set, so the reported number can drift upward by fitting the held-out set itself — a subtle Goodhart leak that undercuts our core "measured accuracy you can trust" claim.
+
+**Design:** split three ways. Use **val** for the per-round keep/discard gate decision; hold **test** back, shown to the loop never, used only for the final reported number. Divergence (val climbs, test flat) directly signals overfitting. Touches `split.ts`, `setup.ts`, and evaluator wiring; keep two-way as a fallback for tiny sample sets (< ~6–8). Generalises and partly absorbs **D7**. **Sequence this early** — with or just after the ship-spec live-smoke validation, ahead of D3.
+
 ---
 
 ## D4. Parallel subagents + workspace isolation
@@ -90,6 +102,8 @@ Every deferred item must preserve the **frozen-evaluator boundary** (ship spec �
 
 **Deferred:** detection + tooling — flag suspected gaming (e.g. held-out climbs while a held-back "shadow" slice does not), surface it, and provide a one-command epoch bump + re-baseline flow. Optionally maintain a permanent *shadow* held-out slice never shown to the loop, purely to detect overfitting to the held-out set itself.
 
+> **Note:** the train/val/test split (**D11**) is the simpler first step toward this — once `test` is held back from the loop, val-vs-test divergence already gives a basic overfitting signal without the full epoch-bump tooling.
+
 ---
 
 ## D8. Live dashboard (evo-style)
@@ -116,9 +130,11 @@ Every deferred item must preserve the **frozen-evaluator boundary** (ship spec �
 
 ## Sequencing recommendation
 
-1. **D2** (cost) + **D1** (productize B) — make it cheap and self-serve.
-2. **D3** (Pareto tree search) — the first real quality jump.
-3. **D5** (multi-seed) + **D10** (gate kinds) — robustness.
-4. **D4** (parallel subagents) — throughput, once cost is controlled.
-5. **D6** (schema mutation) + **D7** (epoch tooling) — power-user/safety.
-6. **D8** (dashboard, folded into D1) + **D9** (drift flywheel) — long-term moat.
+0. **(Not deferred) Prove the greedy loop live** — ship-spec integration smoke must show a real gain on a real gold set before any item below is worth building.
+1. **D11** (train/val/test split) — cheap, trust-critical; do with/just after the live-smoke validation.
+2. **D2** (cost) + **D1** (productize B) — make it cheap and self-serve.
+3. **D3** (Pareto tree search) — the first real quality jump.
+4. **D5** (multi-seed) + **D10** (gate kinds) — robustness.
+5. **D4** (parallel subagents) — throughput, once cost is controlled.
+6. **D6** (schema mutation) + **D7** (epoch tooling) — power-user/safety.
+7. **D8** (dashboard, folded into D1) + **D9** (drift flywheel) — long-term moat.
