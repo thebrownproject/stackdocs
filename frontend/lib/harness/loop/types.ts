@@ -57,6 +57,16 @@ export interface ExperimentResult {
   schemaValid: boolean;
   gateResults: GateResult[];
   passed: boolean; // all gates passed
+  /** Per-sample predictions, populated by the live evaluator for persistence/audit. */
+  details?: ExperimentSampleDetail[];
+}
+
+/** One held-out document's prediction, used to write `predictions` rows for audit. */
+export interface ExperimentSampleDetail {
+  sampleId: string;
+  extractedFields: Record<string, unknown>;
+  confidenceScores: Record<string, unknown>;
+  perFieldPassed: Record<string, boolean>;
 }
 
 export interface BundlePatch {

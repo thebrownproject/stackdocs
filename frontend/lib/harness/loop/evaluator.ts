@@ -7,7 +7,7 @@ import { getAgentTools } from "../../agent/tools/registry";
 import { downloadFileBytes } from "../../supabase-admin";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { checkGates, allGatesPassed } from "./gates";
-import type { Bundle, EvalSample, ExperimentResult, SealedEvaluator } from "./types";
+import type { Bundle, EvalSample, ExperimentResult, ExperimentSampleDetail, SealedEvaluator } from "./types";
 
 interface RunOneResult {
   extractedFields: Record<string, unknown>;
@@ -34,19 +34,31 @@ export async function evaluate(
   deps: EvaluatorDeps,
 ): Promise<ExperimentResult> {
   const evals: SampleEval[] = [];
+  const runOutputs = new Map<string, RunOneResult>();
   let reviewCount = 0;
   let schemaValid = true;
 
   for (const sample of sealed.heldOut) {
     const out = await deps.runOne(sample, bundle, sealed);
     evals.push({ sampleId: sample.id, expected: sample.expectedOutput, actual: out.extractedFields });
+    runOutputs.set(sample.id, out);
     if (out.minConfidence < sealed.reviewThreshold) reviewCount += 1;
     if (!isSchemaValid(sealed, out.extractedFields)) schemaValid = false;
   }
 
-  const { result } = scoreRun(sealed.fieldSchema, evals);
+  const { result, perSample } = scoreRun(sealed.fieldSchema, evals);
   const reviewRate = sealed.heldOut.length === 0 ? 0 : reviewCount / sealed.heldOut.length;
   const gateResults = checkGates(sealed.gates, { score: result, reviewRate, schemaValid });
+
+  const details: ExperimentSampleDetail[] = sealed.heldOut.map((sample) => {
+    const out = runOutputs.get(sample.id);
+    return {
+      sampleId: sample.id,
+      extractedFields: out?.extractedFields ?? {},
+      confidenceScores: out?.confidenceScores ?? {},
+      perFieldPassed: perSample[sample.id] ?? {},
+    };
+  });
 
   return {
     score: result.overallAccuracy,
@@ -55,6 +67,7 @@ export async function evaluate(
     schemaValid,
     gateResults,
     passed: allGatesPassed(gateResults),
+    details,
   };
 }
 

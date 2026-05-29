@@ -7,7 +7,8 @@ import { evaluate, makeLiveRunOne } from "../lib/harness/loop/evaluator";
 import { proposeMutation, makeLiveGenerate } from "../lib/harness/loop/mutator";
 import { SupabaseTreeStore } from "../lib/harness/loop/tree";
 import { runLoop } from "../lib/harness/loop/engine";
-import type { Bundle, LoopConfig } from "../lib/harness/loop/types";
+import { persistEvalRun } from "../lib/harness/loop/persist";
+import type { Bundle, ExperimentResult, LoopConfig } from "../lib/harness/loop/types";
 
 function arg(name: string, fallback?: string): string {
   const i = process.argv.indexOf(`--${name}`);
@@ -38,7 +39,14 @@ async function main() {
   console.log(`Sealed eval epoch ${sealed.evalEpoch}: ${sealed.heldOut.length} held-out, ${sealed.train.length} train, ${sealed.gates.length} gates.`);
 
   const runOne = makeLiveRunOne(db, agentId);
-  const evaluator = (bundle: Bundle, s = sealed) => evaluate(bundle, s, { runOne });
+  // Cache each bundle's held-out result so we can persist the best one as an audit
+  // run afterwards without re-evaluating (which would cost more API calls).
+  const resultsByVersion = new Map<number, { bundle: Bundle; result: ExperimentResult }>();
+  const evaluator = async (bundle: Bundle, s = sealed) => {
+    const result = await evaluate(bundle, s, { runOne });
+    resultsByVersion.set(bundle.version, { bundle, result });
+    return result;
+  };
 
   // Baseline bundle (version 1, no rules) as the root of the tree.
   const tree = new SupabaseTreeStore(db, agentId, userId, sealed.evalEpoch);
@@ -89,11 +97,33 @@ async function main() {
     .eq("agent_id", agentId).eq("eval_epoch", sealed.evalEpoch).eq("status", "committed")
     .order("score", { ascending: false }).limit(1).maybeSingle();
   if (bestBundle?.version) {
+    const bestVersion = bestBundle.version as number;
     await db.from("agents").update({
-      active_bundle_version: bestBundle.version, status: "trained",
+      active_bundle_version: bestVersion, status: "trained",
       updated_at: new Date().toISOString(),
     }).eq("id", agentId);
-    console.log(`Promoted v${bestBundle.version} as active bundle.`);
+    console.log(`Promoted v${bestVersion} as active bundle.`);
+
+    // Persist the best bundle's held-out result as an eval run (+ predictions), so
+    // it can be turned into a shareable accuracy audit from the dashboard.
+    const best = resultsByVersion.get(bestVersion);
+    if (best) {
+      const evalRunId = await persistEvalRun(db, {
+        agentId, userId, bundle: best.bundle, result: best.result,
+      });
+      if (evalRunId) {
+        // Dashboard reads accuracy_summary.per_field as field -> accuracy number.
+        const perFieldAccuracy = Object.fromEntries(
+          Object.entries(best.result.perField).map(([f, s]) => [f, s.accuracy]),
+        );
+        await db.from("agents")
+          .update({ accuracy_summary: { overall: best.result.score, per_field: perFieldAccuracy } })
+          .eq("id", agentId);
+        console.log(`Saved eval run ${evalRunId} (create an audit link from it to share the result).`);
+      }
+    } else {
+      console.log("Note: best bundle was the baseline; its eval run is not re-persisted.");
+    }
   }
 }
 
