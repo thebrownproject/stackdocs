@@ -64,7 +64,7 @@ export function CreateAgentButton() {
             <DialogHeader>
               <DialogTitle>Agent created</DialogTitle>
               <DialogDescription>
-                Copy your API key now — it is shown only once and stored as a hash.
+                Copy your API key now. It is shown only once and stored as a hash.
               </DialogDescription>
             </DialogHeader>
             <ApiKeyReveal apiKey={created.apiKey} />

@@ -1,10 +1,8 @@
 // Normalises an uploaded document into something the model can read. Claude
-// reads PDFs and images natively (passed as a file part); Office/text formats
-// are converted to text first. Forward-deployed engagements take whatever the
-// customer's systems emit (builder forms as .docx/.xlsx, etc.).
+// reads PDFs and images natively (passed as a file part); document/text formats
+// are converted to text first.
 
 import mammoth from "mammoth";
-import * as XLSX from "xlsx";
 
 const MODEL_NATIVE = new Set([
   "application/pdf",
@@ -39,19 +37,6 @@ export async function normalizeToModelInput(
   if (mediaType.includes("wordprocessingml") || e === "docx") {
     const { value } = await mammoth.extractRawText({ buffer: Buffer.from(data) });
     return { kind: "text", text: value };
-  }
-
-  if (
-    mediaType.includes("spreadsheetml") ||
-    mediaType.includes("ms-excel") ||
-    e === "xlsx" ||
-    e === "xls"
-  ) {
-    const wb = XLSX.read(Buffer.from(data), { type: "buffer" });
-    const sheets = wb.SheetNames.map(
-      (name) => `# ${name}\n${XLSX.utils.sheet_to_csv(wb.Sheets[name])}`,
-    );
-    return { kind: "text", text: sheets.join("\n\n") };
   }
 
   if (mediaType.startsWith("text/") || e === "csv" || e === "txt" || e === "md") {

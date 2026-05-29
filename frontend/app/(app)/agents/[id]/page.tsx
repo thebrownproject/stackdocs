@@ -4,6 +4,8 @@ import { AgentDetailView } from "@/components/agents/agent-detail";
 import { FailureDrilldown } from "@/components/agents/failure-drilldown";
 import { WebhookDeliveries } from "@/components/agents/webhook-deliveries";
 
+export const dynamic = "force-dynamic";
+
 export default async function AgentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [agent, failures, deliveries] = await Promise.all([

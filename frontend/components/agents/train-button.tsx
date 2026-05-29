@@ -17,11 +17,12 @@ interface StepEvent {
   version?: number;
   accuracy?: number;
   adopted?: boolean;
+  evalRunId?: string | null;
 }
 
 function describe(ev: StepEvent): string | null {
   if (ev.error) return `Error: ${ev.error}`;
-  if (ev.complete) return `Promoted bundle v${ev.version} — ${((ev.accuracy ?? 0) * 100).toFixed(1)}% held-out`;
+  if (ev.complete) return `Promoted bundle v${ev.version} - ${((ev.accuracy ?? 0) * 100).toFixed(1)}% held-out`;
   switch (ev.step) {
     case "load":
       return `Loaded ${ev.sampleCount} samples`;
@@ -32,7 +33,7 @@ function describe(ev: StepEvent): string | null {
     case "baseline":
       return `Baseline accuracy ${((ev.overall ?? 0) * 100).toFixed(1)}%`;
     case "tune":
-      return `Tuned accuracy ${((ev.overall ?? 0) * 100).toFixed(1)}% — rules ${ev.adopted ? "adopted" : "discarded (no gain)"}`;
+      return `Tuned accuracy ${((ev.overall ?? 0) * 100).toFixed(1)}% - rules ${ev.adopted ? "adopted" : "discarded (no gain)"}`;
     case "held_out":
       return `Held-out accuracy ${((ev.overall ?? 0) * 100).toFixed(1)}%`;
     default:
@@ -44,10 +45,12 @@ export function TrainButton({ agentId, disabled }: { agentId: string; disabled?:
   const router = useRouter();
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState<string[]>([]);
+  const [auditUrl, setAuditUrl] = useState<string | null>(null);
 
   async function train() {
     setRunning(true);
     setLog([]);
+    setAuditUrl(null);
     try {
       const res = await fetch(`/api/agents/${agentId}/train`, { method: "POST" });
       if (!res.ok || !res.body) {
@@ -59,6 +62,7 @@ export function TrainButton({ agentId, disabled }: { agentId: string; disabled?:
       const decoder = new TextDecoder();
       let buffer = "";
       let sawError: string | null = null;
+      let evalRunId: string | null = null;
 
       for (;;) {
         const { done, value } = await reader.read();
@@ -76,13 +80,26 @@ export function TrainButton({ agentId, disabled }: { agentId: string; disabled?:
             continue;
           }
           if (ev.error) sawError = ev.error;
+          if (ev.evalRunId) evalRunId = ev.evalRunId;
           const msg = describe(ev);
           if (msg) setLog((prev) => [...prev, msg]);
         }
       }
 
-      if (sawError) toast.error(sawError);
-      else toast.success("Training complete");
+      if (sawError) {
+        toast.error(sawError);
+      } else {
+        if (evalRunId) {
+          const linkRes = await fetch("/api/audit-links", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ evalRunId }),
+          });
+          const linkData = await linkRes.json().catch(() => ({}));
+          if (linkRes.ok && typeof linkData.url === "string") setAuditUrl(linkData.url);
+        }
+        toast.success("Training complete");
+      }
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Training failed");
@@ -102,6 +119,14 @@ export function TrainButton({ agentId, disabled }: { agentId: string; disabled?:
           {log.map((line, i) => (
             <div key={i}>{line}</div>
           ))}
+        </div>
+      )}
+      {auditUrl && (
+        <div className="flex items-center gap-2 rounded-md border bg-muted/40 p-2 text-xs">
+          <span className="text-muted-foreground">Audit link</span>
+          <a href={auditUrl} target="_blank" rel="noreferrer" className="truncate font-mono underline-offset-4 hover:underline">
+            {auditUrl}
+          </a>
         </div>
       )}
     </div>

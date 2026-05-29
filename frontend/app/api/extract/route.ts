@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { processDocument } from "@/lib/agent/process";
 import { bearerFrom, hashApiKey } from "@/lib/auth/api-key";
+import { QuotaExceededError } from "@/lib/billing/enforce";
 import { createAdminSupabaseClient, DOCUMENTS_BUCKET } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
@@ -65,13 +66,21 @@ export async function POST(req: Request) {
     fileInput = { data: body.fileUrl, mediaType: mimeType };
   }
 
-  const result = await processDocument(db, agent, bundle, {
-    file: fileInput,
-    filename,
-    storedPath,
-    fileSize,
-    mimeType,
-  });
+  let result;
+  try {
+    result = await processDocument(db, agent, bundle, {
+      file: fileInput,
+      filename,
+      storedPath,
+      fileSize,
+      mimeType,
+    });
+  } catch (err) {
+    if (err instanceof QuotaExceededError) {
+      return NextResponse.json({ error: err.message, reason: err.reason, upgradeUrl: err.upgradeUrl }, { status: 402 });
+    }
+    throw err;
+  }
 
   return NextResponse.json(result);
 }

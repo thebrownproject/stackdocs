@@ -35,9 +35,9 @@ export function WebhookDeliveries({ deliveries }: { deliveries: WebhookDelivery[
                 <TableCell>
                   <Badge variant={d.ok ? "outline" : "destructive"}>{d.ok ? "delivered" : "failed"}</Badge>
                 </TableCell>
-                <TableCell className="text-right tabular-nums">{d.status_code ?? "—"}</TableCell>
+                <TableCell className="text-right tabular-nums">{d.status_code ?? "n/a"}</TableCell>
                 <TableCell className="text-right tabular-nums">{d.attempts}</TableCell>
-                <TableCell className="max-w-[20rem] truncate text-muted-foreground">{d.error ?? "—"}</TableCell>
+                <TableCell className="max-w-[20rem] truncate text-muted-foreground">{d.error ?? "n/a"}</TableCell>
                 <TableCell className="text-right text-muted-foreground">
                   {new Date(d.created_at).toLocaleString()}
                 </TableCell>

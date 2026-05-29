@@ -17,6 +17,13 @@ yarn-error.log*
 
 # Testing
 coverage/
+.playwright-mcp/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
 
 # IDEs
 .vscode/

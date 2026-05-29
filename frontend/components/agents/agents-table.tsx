@@ -18,7 +18,7 @@ const STATUS_VARIANT: Record<AgentStatus, "default" | "secondary" | "outline"> =
 };
 
 function pct(n: number | null | undefined): string {
-  return typeof n === "number" ? `${(n * 100).toFixed(1)}%` : "—";
+  return typeof n === "number" ? `${(n * 100).toFixed(1)}%` : "n/a";
 }
 
 export function AgentsTable({ agents }: { agents: AgentSummary[] }) {
@@ -60,7 +60,7 @@ export function AgentsTable({ agents }: { agents: AgentSummary[] }) {
                 {pct(agent.accuracy_summary?.overall)}
               </TableCell>
               <TableCell className="text-right tabular-nums">
-                {agent.active_bundle_version ? `v${agent.active_bundle_version}` : "—"}
+                {agent.active_bundle_version ? `v${agent.active_bundle_version}` : "n/a"}
               </TableCell>
               <TableCell className="text-right tabular-nums">{agent.sample_count}</TableCell>
               <TableCell className="text-right text-muted-foreground">

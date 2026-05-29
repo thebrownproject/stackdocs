@@ -82,7 +82,7 @@ export interface RunAgentInput {
   /** Worked examples (ground-truth outputs from similar docs) for few-shot guidance. */
   fewShot?: Array<Record<string, unknown>>;
   file: { data: Uint8Array | URL | string; mediaType: string };
-  /** Original filename, used to detect convertible formats (docx/xlsx/csv). */
+  /** Original filename, used to detect convertible formats (docx/csv/txt). */
   filename?: string;
   /** Account-specific tools (lookups/validations) merged with the built-ins. */
   tools?: ToolSet;
@@ -125,7 +125,7 @@ export async function runAgent(input: RunAgentInput): Promise<RunAgentResult> {
     .filter(Boolean)
     .join("\n");
 
-  // Convert non-native formats (docx/xlsx/csv/...) to text; pass PDFs/images directly.
+  // Convert non-native formats (docx/csv/txt) to text; pass PDFs/images directly.
   const doc = await normalizeToModelInput(input.file.data, input.file.mediaType, input.filename);
   const documentPart =
     doc.kind === "text"

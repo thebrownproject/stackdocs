@@ -15,7 +15,7 @@ export function ApiKeyReveal({ apiKey }: { apiKey: string }) {
       toast.success("API key copied");
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Copy failed — select and copy manually");
+      toast.error("Copy failed. Select and copy manually.");
     }
   }
 

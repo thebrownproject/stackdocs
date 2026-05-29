@@ -72,7 +72,7 @@ async function writeRun(
   score: ReturnType<typeof scoreRun>,
   predictionRows: SampleRow[],
   predictions: Map<string, { extractedFields: Record<string, unknown>; confidenceScores: Record<string, unknown> }>,
-): Promise<void> {
+): Promise<string | null> {
   const { data: run } = await db
     .from("eval_runs")
     .insert({
@@ -92,10 +92,13 @@ async function writeRun(
       sample_id: r.id,
       user_id: base.user_id,
       output: predictions.get(r.id)?.extractedFields ?? {},
+      confidence_scores: predictions.get(r.id)?.confidenceScores ?? {},
       per_field_passed: score.perSample[r.id] ?? {},
     }));
     if (rows.length > 0) await db.from("predictions").insert(rows);
   }
+
+  return (run?.id as string | undefined) ?? null;
 }
 
 // TUNE step: a strong model reads the baseline failures and proposes general
@@ -232,12 +235,24 @@ export async function* runTraining(opts: TrainOptions): AsyncGenerator<Record<st
   });
 
   const accuracySummary = { overall: heldOutScore.result.overallAccuracy, perField: heldOutScore.result.perField };
-  await writeRun(db, { agent_id: agentId, user_id: userId, phase: "held_out", bundle_version: version }, heldOutScore, testRows, heldOut.predictions);
+  const heldOutRunId = await writeRun(
+    db,
+    { agent_id: agentId, user_id: userId, phase: "held_out", bundle_version: version },
+    heldOutScore,
+    testRows,
+    heldOut.predictions,
+  );
   await db
     .from("agents")
     .update({ active_bundle_version: version, status: "trained", accuracy_summary: accuracySummary, updated_at: new Date().toISOString() })
     .eq("id", agentId);
 
-  yield { step: "held_out", overall: heldOutScore.result.overallAccuracy, perField: heldOutScore.result.perField, version };
-  yield { complete: true, version, accuracy: heldOutScore.result.overallAccuracy };
+  yield {
+    step: "held_out",
+    overall: heldOutScore.result.overallAccuracy,
+    perField: heldOutScore.result.perField,
+    version,
+    evalRunId: heldOutRunId,
+  };
+  yield { complete: true, version, accuracy: heldOutScore.result.overallAccuracy, evalRunId: heldOutRunId };
 }

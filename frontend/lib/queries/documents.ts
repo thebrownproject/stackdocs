@@ -1,7 +1,10 @@
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { demoDocuments, isDemoMode } from "@/lib/demo-data";
 import type { Document, DocumentStatus } from "@/types/documents";
 
 export async function getDocuments(): Promise<Document[]> {
+  if (isDemoMode) return demoDocuments;
+
   const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase

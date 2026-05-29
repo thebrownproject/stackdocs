@@ -1,5 +1,12 @@
 import { cache } from "react";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
+import {
+  demoAgentDetails,
+  demoAgents,
+  demoDeliveries,
+  demoFailures,
+  isDemoMode,
+} from "@/lib/demo-data";
 import type {
   AccuracySummary,
   AgentBundle,
@@ -11,6 +18,8 @@ import type {
   FieldSchemaEntry,
   PredictionRow,
   ReviewItem,
+  DestinationSummary,
+  BillingSummary,
   WebhookDelivery,
 } from "@/types/agents";
 
@@ -22,6 +31,8 @@ function sampleCount(samples: unknown): number {
 }
 
 export async function getAgents(): Promise<AgentSummary[]> {
+  if (isDemoMode) return demoAgents;
+
   const supabase = await createServerSupabaseClient();
 
   const { data, error } = await supabase
@@ -50,6 +61,8 @@ export async function getAgents(): Promise<AgentSummary[]> {
 export const getAgentFailures = cache(async function getAgentFailures(
   agentId: string,
 ): Promise<FailureReport | null> {
+  if (isDemoMode) return demoFailures[agentId] ?? null;
+
   const supabase = await createServerSupabaseClient();
 
   const { data: heldOut } = await supabase
@@ -112,6 +125,8 @@ export const getAgentFailures = cache(async function getAgentFailures(
 export const getAgentDeliveries = cache(async function getAgentDeliveries(
   agentId: string,
 ): Promise<WebhookDelivery[]> {
+  if (isDemoMode) return demoDeliveries[agentId] ?? [];
+
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("webhook_deliveries")
@@ -127,20 +142,23 @@ export const getAgentDeliveries = cache(async function getAgentDeliveries(
 });
 
 export const getAgent = cache(async function getAgent(id: string): Promise<AgentDetail | null> {
+  if (isDemoMode && demoAgentDetails[id]) return demoAgentDetails[id];
+
   const supabase = await createServerSupabaseClient();
 
   const { data: agent, error } = await supabase
     .from("agents")
-    .select("id, name, status, active_bundle_version, accuracy_summary, created_at, webhook_url, webhook_secret, api_key_hash, inbound_email_token, samples(count)")
+    .select("id, user_id, name, status, active_bundle_version, accuracy_summary, created_at, webhook_url, webhook_secret, api_key_hash, inbound_email_token, samples(count)")
     .eq("id", id)
     .single();
 
   if (error || !agent) {
     console.error("Error fetching agent:", error);
+    if (isDemoMode) return demoAgentDetails[id] ?? null;
     return null;
   }
 
-  const [runsResult, bundlesResult, reviewResult] = await Promise.all([
+  const [runsResult, bundlesResult, reviewResult, auditLinksResult, destinationsResult, billingResult] = await Promise.all([
     supabase
       .from("eval_runs")
       .select("id, bundle_version, phase, status, overall_accuracy, per_field_scores, sample_count, error, started_at, completed_at")
@@ -159,6 +177,23 @@ export const getAgent = cache(async function getAgent(id: string): Promise<Agent
       .eq("status", "pending")
       .order("created_at", { ascending: false })
       .limit(50),
+    supabase
+      .from("audit_links")
+      .select("id, token, prospect_company, prospect_email, expires_at, revoked_at, view_count, created_at, eval_run_id")
+      .eq("agent_id", id)
+      .eq("user_id", agent.user_id)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("destinations")
+      .select("id, agent_id, kind, label, config, enabled, created_at, updated_at")
+      .eq("agent_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("user_billing")
+      .select("plan, plan_status, docs_processed_current_period, current_period_ends_at")
+      .eq("user_id", agent.user_id)
+      .maybeSingle(),
   ]);
 
   const bundles = (bundlesResult.data ?? []) as AgentBundle[];
@@ -195,5 +230,8 @@ export const getAgent = cache(async function getAgent(id: string): Promise<Agent
     bundles,
     review_items,
     pending_review_count: review_items.length,
+    audit_links: (auditLinksResult.data ?? []),
+    destinations: (destinationsResult.data ?? []) as DestinationSummary[],
+    billing: (billingResult.data ?? null) as BillingSummary | null,
   };
 });

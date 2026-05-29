@@ -40,7 +40,7 @@ export default async function AppLayout({
           {header}
         </header>
         {subbar}
-        <div className="flex flex-1 flex-col min-h-0">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

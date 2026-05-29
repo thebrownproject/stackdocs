@@ -13,6 +13,9 @@ import { SampleUpload } from "@/components/agents/sample-upload";
 import { TrainButton } from "@/components/agents/train-button";
 import { ConnectionPanel } from "@/components/agents/connection-panel";
 import { ReviewResolve } from "@/components/agents/review-resolve";
+import { AuditLinksPanel } from "@/components/agents/audit-links-panel";
+import { BillingPanel } from "@/components/agents/billing-panel";
+import { DestinationsPanel } from "@/components/agents/destinations-panel";
 import type { AgentDetail, AgentStatus } from "@/types/agents";
 
 const STATUS_VARIANT: Record<AgentStatus, "default" | "secondary" | "outline"> = {
@@ -22,11 +25,11 @@ const STATUS_VARIANT: Record<AgentStatus, "default" | "secondary" | "outline"> =
 };
 
 function pct(n: number | null | undefined): string {
-  return typeof n === "number" ? `${(n * 100).toFixed(1)}%` : "—";
+  return typeof n === "number" ? `${(n * 100).toFixed(1)}%` : "n/a";
 }
 
 function dateTime(s: string | null): string {
-  return s ? new Date(s).toLocaleString() : "—";
+  return s ? new Date(s).toLocaleString() : "n/a";
 }
 
 export function AgentDetailView({ agent }: { agent: AgentDetail }) {
@@ -35,7 +38,7 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <h1 className="text-lg font-semibold">{agent.name}</h1>
+        <h1 className="text-xl font-medium">{agent.name}</h1>
         <Badge variant={STATUS_VARIANT[agent.status]}>{agent.status}</Badge>
         {agent.pending_review_count > 0 && (
           <Badge variant="destructive">{agent.pending_review_count} to review</Badge>
@@ -43,7 +46,7 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className="bg-[var(--color-deep-slate)]">
           <CardHeader>
             <CardDescription>Held-out accuracy</CardDescription>
             <CardTitle className="text-3xl tabular-nums">
@@ -57,7 +60,7 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-[var(--color-deep-slate)]">
           <CardHeader>
             <CardTitle className="text-sm">Embeddable API</CardTitle>
           </CardHeader>
@@ -77,7 +80,7 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-[var(--color-deep-slate)]">
           <CardHeader>
             <CardTitle className="text-sm">Samples</CardTitle>
           </CardHeader>
@@ -85,7 +88,7 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm">Train</CardTitle>
@@ -102,8 +105,8 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Connections</CardTitle>
-            <CardDescription>How documents reach this agent and where results go.</CardDescription>
+            <CardTitle className="text-sm">API and manual processing</CardTitle>
+            <CardDescription>Keys, email-in address, and a manual production run path.</CardDescription>
           </CardHeader>
           <CardContent>
             <ConnectionPanel
@@ -116,6 +119,26 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
             />
           </CardContent>
         </Card>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <Card>
+          <CardContent>
+            <DestinationsPanel agentId={agent.id} destinations={agent.destinations} />
+          </CardContent>
+        </Card>
+        <div className="grid gap-4">
+          <Card>
+            <CardContent>
+              <AuditLinksPanel links={agent.audit_links} runs={agent.eval_runs} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent>
+              <BillingPanel billing={agent.billing} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {agent.field_schema && agent.field_schema.length > 0 && (
@@ -169,9 +192,9 @@ export function AgentDetailView({ agent }: { agent: AgentDetail }) {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">{pct(run.overall_accuracy)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{run.sample_count ?? "—"}</TableCell>
+                    <TableCell className="text-right tabular-nums">{run.sample_count ?? "n/a"}</TableCell>
                     <TableCell className="text-right tabular-nums">
-                      {run.bundle_version ? `v${run.bundle_version}` : "—"}
+                      {run.bundle_version ? `v${run.bundle_version}` : "n/a"}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">{dateTime(run.started_at)}</TableCell>
                   </TableRow>

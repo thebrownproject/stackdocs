@@ -90,4 +90,37 @@ export interface AgentDetail extends AgentSummary {
   bundles: AgentBundle[];
   review_items: ReviewItem[];
   pending_review_count: number;
+  audit_links: AgentAuditLink[];
+  destinations: DestinationSummary[];
+  billing: BillingSummary | null;
+}
+
+export interface AgentAuditLink {
+  id: string;
+  token: string;
+  prospect_company: string | null;
+  prospect_email: string | null;
+  expires_at: string | null;
+  revoked_at: string | null;
+  view_count: number;
+  created_at: string;
+  eval_run_id: string;
+}
+
+export interface DestinationSummary {
+  id: string;
+  agent_id: string;
+  kind: "webhook" | "google_sheets" | "email";
+  label: string;
+  config: Record<string, unknown>;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BillingSummary {
+  plan: "free" | "starter" | "pro";
+  plan_status: "active" | "past_due" | "canceled" | "trialing";
+  docs_processed_current_period: number;
+  current_period_ends_at: string | null;
 }

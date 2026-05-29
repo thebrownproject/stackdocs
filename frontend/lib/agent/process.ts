@@ -4,11 +4,11 @@
 // document + extraction, then routes by confidence (webhook vs review queue).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import "../customers"; // side-effect: register per-customer tools + destinations
 import { runAgent } from "./runtime";
 import { getAgentTools } from "./tools/registry";
-import { getDestination, type DeliveryContext } from "../adapters/registry";
 import { deliverWebhook } from "../adapters/webhook";
+import { assertQuotaAllowed, checkQuota, recordUsage } from "../billing/enforce";
+import { deliverAll, resolveDestinations, type DeliveryContext, type DestinationAdapter } from "../destinations/resolver";
 import { applyCalibration, type CalibrationMap } from "../harness/calibration";
 import type { FieldSchema } from "../harness/types";
 
@@ -51,6 +51,8 @@ export async function processDocument(
   bundle: ProcessBundle,
   input: ProcessInput,
 ): Promise<ProcessResult> {
+  assertQuotaAllowed(await checkQuota(db, agent.user_id));
+
   // Resolve few-shot exemplars referenced by the bundle.
   const fewShotIds = Array.isArray(bundle.few_shot_sample_ids) ? bundle.few_shot_sample_ids : [];
   let fewShot: Array<Record<string, unknown>> = [];
@@ -111,8 +113,6 @@ export async function processDocument(
       status: "pending",
     });
   } else {
-    // Deliver high-confidence results: a registered custom destination adapter
-    // takes precedence over the default signed webhook.
     const ctx: DeliveryContext = {
       agentId: agent.id,
       documentId,
@@ -120,24 +120,34 @@ export async function processDocument(
       confidenceScores: result.confidenceScores,
       minConfidence: calibratedMin,
     };
-    const adapter = getDestination(agent.id);
-    if (adapter || agent.webhook_url) {
-      const res = adapter
-        ? await adapter.deliver(ctx)
-        : await deliverWebhook(agent.webhook_url!, agent.webhook_secret, ctx);
-      delivered = res.ok;
-      await db.from("webhook_deliveries").insert({
-        agent_id: agent.id,
-        document_id: documentId,
-        user_id: agent.user_id,
-        url: adapter ? adapter.label : agent.webhook_url,
-        ok: res.ok,
-        status_code: res.status || null,
-        attempts: res.attempts,
-        error: res.error ?? null,
-      });
+    const adapters = await resolveDestinations(db, agent.id);
+    if (adapters.length === 0 && agent.webhook_url) {
+      const legacy: DestinationAdapter = {
+        label: agent.webhook_url,
+        deliver: (deliveryCtx) => deliverWebhook(agent.webhook_url!, agent.webhook_secret, deliveryCtx),
+      };
+      adapters.push(legacy);
+    }
+
+    if (adapters.length > 0) {
+      const results = await deliverAll(adapters, ctx);
+      delivered = results.every((r) => r.ok);
+      await db.from("webhook_deliveries").insert(
+        results.map((res) => ({
+          agent_id: agent.id,
+          document_id: documentId,
+          user_id: agent.user_id,
+          url: res.label,
+          ok: res.ok,
+          status_code: res.status || null,
+          attempts: res.attempts,
+          error: res.error ?? null,
+        })),
+      );
     }
   }
+
+  await recordUsage(db, agent.user_id);
 
   return {
     documentId,

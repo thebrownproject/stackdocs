@@ -11,8 +11,10 @@ import {
 import * as Icons from "@/components/icons";
 import type { DocumentStatus } from "@/types/documents";
 
+export const dynamic = "force-dynamic";
+
 function formatBytes(bytes: number): string {
-  if (!bytes) return "—";
+  if (!bytes) return "n/a";
   const units = ["B", "KB", "MB", "GB"];
   const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
   return `${(bytes / 1024 ** i).toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
@@ -54,7 +56,7 @@ export default async function DocumentsPage() {
           {documents.map((doc) => (
             <TableRow key={doc.id}>
               <TableCell className="font-medium">{doc.filename}</TableCell>
-              <TableCell className="text-muted-foreground">{doc.agent_name ?? "—"}</TableCell>
+              <TableCell className="text-muted-foreground">{doc.agent_name ?? "n/a"}</TableCell>
               <TableCell>
                 <Badge variant={statusVariant(doc.status)}>{doc.status}</Badge>
               </TableCell>

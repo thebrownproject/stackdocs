@@ -54,7 +54,7 @@ export function ReviewResolve({ agentId, reviewId, label, fieldSchema }: Props) 
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to resolve");
-      toast.success("Resolved — saved as a correction sample");
+      toast.success("Resolved. Saved as a correction sample.");
       setOpen(false);
       router.refresh();
     } catch (err) {

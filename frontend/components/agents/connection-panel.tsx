@@ -45,7 +45,7 @@ export function ConnectionPanel({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed");
       setRotatedKey(data.apiKey);
-      toast.success("New API key issued — the old key is revoked");
+      toast.success("New API key issued. The old key is revoked.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed");
     } finally {
@@ -89,7 +89,7 @@ export function ConnectionPanel({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Processing failed");
       setResult(data);
-      toast.success(`Processed — ${data.status}`);
+      toast.success(`Processed: ${data.status}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Processing failed");
     } finally {
@@ -127,27 +127,28 @@ export function ConnectionPanel({
           </p>
         )}
         <code className="rounded-md border bg-muted/40 p-2 font-mono text-xs">
-          POST /api/extract — Authorization: Bearer &lt;key&gt; — multipart file
+          POST /api/extract - Authorization: Bearer &lt;key&gt; - multipart file
         </code>
       </div>
 
       {/* Webhook */}
-      <div className="flex flex-col gap-2">
+      <form className="flex flex-col gap-2" onSubmit={(event) => event.preventDefault()}>
         <span className="font-medium">Webhook delivery</span>
         <Input placeholder="https://your-system.example/hook" value={url} onChange={(e) => setUrl(e.target.value)} />
         <Input
           type="password"
-          placeholder={hasWebhookSecret ? "•••••••• (set — leave blank to keep)" : "Signing secret (optional)"}
+          autoComplete="new-password"
+          placeholder={hasWebhookSecret ? "•••••••• (set, leave blank to keep)" : "Signing secret (optional)"}
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
         />
-        <Button size="sm" variant="outline" className="w-fit" onClick={saveWebhook} disabled={savingHook}>
+        <Button type="button" size="sm" variant="outline" className="w-fit" onClick={saveWebhook} disabled={savingHook}>
           Save delivery settings
         </Button>
         <p className="text-xs text-muted-foreground">
           High-confidence results POST here; low-confidence ones go to the review queue instead.
         </p>
-      </div>
+      </form>
 
       {/* Inbound email (stub) */}
       <div className="flex flex-col gap-2">
@@ -177,7 +178,7 @@ export function ConnectionPanel({
         <input
           ref={fileRef}
           type="file"
-          accept=".pdf,.png,.jpg,.jpeg,.webp,.docx,.xls,.xlsx,.csv,.txt"
+          accept=".pdf,.png,.jpg,.jpeg,.webp,.docx,.csv,.txt"
           className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-input file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-accent"
         />
         <Button

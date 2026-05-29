@@ -4,6 +4,32 @@
 import type { FieldType } from "./types";
 
 const FUZZY_THRESHOLD = 0.85;
+const MONTHS: Record<string, number> = {
+  jan: 1,
+  january: 1,
+  feb: 2,
+  february: 2,
+  mar: 3,
+  march: 3,
+  apr: 4,
+  april: 4,
+  may: 5,
+  jun: 6,
+  june: 6,
+  jul: 7,
+  july: 7,
+  aug: 8,
+  august: 8,
+  sep: 9,
+  sept: 9,
+  september: 9,
+  oct: 10,
+  october: 10,
+  nov: 11,
+  november: 11,
+  dec: 12,
+  december: 12,
+};
 
 export const MISSING = Symbol("missing");
 export type MaybeValue = unknown | typeof MISSING;
@@ -25,32 +51,46 @@ function parseNumber(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function isoDate(y: number, m: number, d: number): string | null {
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) {
+    return null;
+  }
+  return dt.toISOString().slice(0, 10);
+}
+
 /** Parse a date to an ISO date string (yyyy-mm-dd), or null. Numeric d/m/y is
- *  read day-first (AU/intl convention); ISO and named-month formats fall through
- *  to Date.parse. */
+ *  read day-first (AU/intl convention). */
 function parseDate(v: unknown): string | null {
   const s = String(v).trim();
   if (!s) return null;
 
-  // ISO yyyy-mm-dd (and timestamps): trust Date.parse.
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
-    const t = Date.parse(s);
-    return Number.isNaN(t) ? null : new Date(t).toISOString().slice(0, 10);
+  // ISO yyyy-mm-dd, including timestamps, is already a calendar date prefix.
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) {
+    return isoDate(Number(iso[1]), Number(iso[2]), Number(iso[3]));
   }
 
   // dd/mm/yyyy, dd-mm-yyyy, dd.mm.yyyy — parse day-first, before Date.parse
   // (which would read slash dates as US month-first).
-  const m = s.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})$/);
-  if (m) {
-    const [, d, mo, rawY] = m;
+  const numeric = s.match(/^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2,4})$/);
+  if (numeric) {
+    const [, d, mo, rawY] = numeric;
     const y = rawY.length === 2 ? "20" + rawY : rawY;
-    const dt = new Date(Number(y), Number(mo) - 1, Number(d));
-    return Number.isNaN(dt.getTime()) ? null : dt.toISOString().slice(0, 10);
+    return isoDate(Number(y), Number(mo), Number(d));
   }
 
-  // Named months etc. ("5 Jan 2026").
-  const t = Date.parse(s);
-  return Number.isNaN(t) ? null : new Date(t).toISOString().slice(0, 10);
+  // Named months such as "5 Jan 2026" should not depend on local timezone.
+  const named = s.match(/^(\d{1,2})\s+([a-zA-Z]+)\.?,?\s+(\d{2,4})$/);
+  if (named) {
+    const [, d, rawMonth, rawY] = named;
+    const month = MONTHS[rawMonth.toLowerCase()];
+    if (!month) return null;
+    const y = rawY.length === 2 ? "20" + rawY : rawY;
+    return isoDate(Number(y), month, Number(d));
+  }
+
+  return null;
 }
 
 function tokenSet(v: unknown): Set<string> {

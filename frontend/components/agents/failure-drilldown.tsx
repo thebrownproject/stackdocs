@@ -13,7 +13,7 @@ import { flatten } from "@/lib/harness/flatten";
 import type { FailureReport } from "@/types/agents";
 
 function show(v: unknown): string {
-  if (v === null || v === undefined || v === "") return "—";
+  if (v === null || v === undefined || v === "") return "n/a";
   return typeof v === "string" ? v : JSON.stringify(v);
 }
 
