@@ -54,3 +54,6 @@ temp/
 
 # bv (beads viewer) local config and caches
 .bv/
+
+# Cloned reference repos (local study only, not part of this project)
+references/
