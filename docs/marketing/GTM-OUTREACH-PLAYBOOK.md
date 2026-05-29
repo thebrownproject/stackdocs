@@ -1,4 +1,4 @@
-# Trestle GTM Outreach Playbook
+# Stackdocs GTM Outreach Playbook
 
 **Status:** v1.0 — 2026-05-29
 **For:** a founder running this **around a full-time job** (~3–4 hrs/week for GTM).
@@ -12,6 +12,18 @@
 
 ---
 
+## 0. The core message (say this everywhere)
+
+> **We build tuned agents for your stack of documents — processing them at high
+> accuracy and linked into your systems.**
+
+This is the one-liner for the landing page, your LinkedIn headline, and the first
+line of any pitch. It names the three things that matter to a buyer, in order:
+**tuned to your documents** (not a generic template), **high accuracy** (and it's
+*measured* — see §3), and **linked into your existing systems** (it lands where the
+data already needs to go). It also reinforces the **Stackdocs** name — a tuned agent
+for your *stack of documents*.
+
 ## 1. The model in one sentence
 
 > **Done-for-you document automation for SMBs drowning in paperwork** — we set up
@@ -24,7 +36,7 @@ the tuning.
 
 ### Why this fits
 
-- **Matches the product.** Trestle runs many agents per account, each tuned to one
+- **Matches the product.** Stackdocs runs many agents per account, each tuned to one
   document type, each with its own destination adapter + custom tools. "Multiple
   processors per customer" *is* the architecture.
 - **Matches a time-poor founder.** Higher ACV ($500–2k setup + $300–1,500/mo per

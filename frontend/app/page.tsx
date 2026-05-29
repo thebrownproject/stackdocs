@@ -50,7 +50,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-background text-foreground">
       {/* Nav */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <span className="text-lg font-semibold tracking-tight">Trestle</span>
+        <span className="text-lg font-semibold tracking-tight">Stackdocs</span>
         <nav className="flex items-center gap-2">
           <SignedOut>
             <SignInButton mode="modal">
@@ -71,17 +71,17 @@ export default function HomePage() {
       {/* Hero */}
       <section className="mx-auto max-w-3xl px-6 pt-16 pb-20 text-center sm:pt-24">
         <p className="text-sm font-medium uppercase tracking-widest text-primary">
-          Measured-accuracy document extraction
+          Tuned agents for your stack of documents
         </p>
         <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-6xl">
-          Stop hand-keying documents.
-          <br className="hidden sm:block" /> See the accuracy first.
+          Your stack of documents,
+          <br className="hidden sm:block" /> processed at high accuracy.
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-[var(--color-light-steel)]">
-          Trestle turns your labelled documents into an extraction agent with a{" "}
-          <span className="text-foreground">measured accuracy number</span> — then
-          routes every document by confidence: straight into your system, or to
-          human review. No rules to write. Tuned to your formats.
+          Stackdocs builds an extraction{" "}
+          <span className="text-foreground">agent tuned to your documents</span> —
+          processing them at high, measured accuracy and feeding the data straight
+          into the systems you already use. No rules to write, no manual data entry.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <AuditCta className="w-full sm:w-auto" />
@@ -173,7 +173,7 @@ export default function HomePage() {
             {[
               {
                 title: "Line items and your formats — not just headers",
-                body: "Generic capture tools read vendor, date and total. Trestle is tuned to your actual documents, including line items and non-standard layouts they choke on.",
+                body: "Generic capture tools read vendor, date and total. Stackdocs is tuned to your actual documents, including line items and non-standard layouts they choke on.",
               },
               {
                 title: "A measured number, not a promise",
@@ -214,7 +214,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
-          <span>Trestle — measured-accuracy document extraction</span>
+          <span>Stackdocs — measured-accuracy document extraction</span>
           <SignedOut>
             <SignInButton mode="modal">
               <button className="hover:text-foreground">Sign in</button>

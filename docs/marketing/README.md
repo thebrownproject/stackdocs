@@ -1,6 +1,9 @@
 # Marketing Docs
 
-Go-to-market and landing-page assets for Trestle.
+Go-to-market and landing-page assets for Stackdocs.
+
+> **Brand note:** customer-facing name is **Stackdocs**; "Trestle" is the internal
+> codename for the rebuilt product line. See `NAMING-DECISION.md` (open decision).
 
 ## Contents
 
