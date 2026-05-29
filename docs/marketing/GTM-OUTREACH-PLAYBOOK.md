@@ -226,3 +226,139 @@ profile, the feed confirms you're the real thing.
 - Time-to-first-value per customer (setup speed) — the autoresearch loop should keep
   this low; if a processor takes too long to tune, that's a product signal.
 - MRR per account & expansion rate (processors per account over time).
+
+---
+
+## 13. Tally intake form (copy/paste)
+
+Keep it short — every field is friction. Title: **"Free document accuracy audit."**
+Subtitle: *"Send a few sample documents you currently key by hand. I'll send back a
+report showing exactly which fields we'd auto-extract and at what accuracy. No
+account, no cost."*
+
+| Field | Type | Notes |
+|---|---|---|
+| Name | short text | required |
+| Company | short text | required |
+| Work email | email | required |
+| What documents do you want audited? | short text | e.g. "subcontractor invoices + progress claims" |
+| Which system do you key them into today? | dropdown + "other" | QuickBooks, Sage, Foundation, Procore, Buildertrend, AppFolio, Buildium, Yardi, Xero, Other |
+| Roughly how many of these per month? | dropdown | <50 / 50–200 / 200–1,000 / 1,000+ (a qualifier) |
+| Who keys them today, and roughly how long does it take? | long text | surfaces the ROI in their words |
+| Upload 5–10 sample documents (redacted is fine) | file upload | required |
+| Can you also paste/attach how those were entered (the correct values)? | long text / file | optional but ← this is the ground truth that lets you measure accuracy |
+
+The last row is the important one: their past correct entries are the labels. If they
+can't provide any, you label a few yourself from the documents before tuning.
+
+---
+
+## 14. The audit deliverable (what you send back)
+
+The report page already renders the numbers (`app/audit/[token]`,
+`components/audit/audit-report-view.tsx`): overall accuracy, per-field accuracy, docs
+tested, and an interactive review-rate slider. Your job is the **framing around it**.
+
+**Cover note (the message that carries the link):**
+
+> Hi [Name] — here's your accuracy audit: **[link]**
+>
+> Quick read: across the [N] [document type] you sent, we'd auto-extract
+> **[X]%** of fields correctly with zero human touch. The [2–3 weakest fields]
+> are the ones worth a human glance — the slider on the report lets you set the
+> confidence cut-off and see exactly what share would route to review vs. straight
+> through.
+>
+> In practice that means the ~[hours]/week your team spends keying these drops to a
+> quick review of the uncertain ones, landing straight in [their system]. If it's
+> useful, I can stand this up as a live processor on a pilot — [setup] + [$/mo].
+> Happy to walk through it whenever.
+
+**ROI math to include (use their own numbers from the form):**
+`docs/month × minutes/doc ÷ 60 = hours/month saved`, then `× loaded hourly cost`.
+Even at a conservative rate this is almost always a multiple of your monthly price —
+state it plainly.
+
+---
+
+## 15. Objection handling
+
+| Objection | Response |
+|---|---|
+| "We already use Hubdoc/Dext." | "Those nail standard receipt headers. They don't do line items or your non-standard docs — and Xero has said they're not building line-item extraction. Your audit shows the accuracy on exactly the fields they miss." |
+| "How do I know it won't make mistakes?" | "You get a measured accuracy number up front, not a promise — and anything below your confidence threshold routes to a human review queue instead of going through silently. You decide the threshold." |
+| "Is my data safe?" | "Documents are processed per-extraction and not used to train any shared model; your tuned agent is yours. Send redacted samples for the audit if you prefer." |
+| "We don't have time to set this up." | "That's the point — it's done-for-you. You send samples once; I stand up the processor and wire it into [system]. Your team's only ongoing task is reviewing the low-confidence tail." |
+| "It's too expensive." | "Compare it to the [hours]/week you're paying someone to key these — the audit's ROI math shows it pays back in [weeks]. And we can start with just your most painful document." |
+| "Can it handle our weird format?" | "That's the whole design — the agent is tuned to *your* documents, not a generic template. The audit is run on your actual formats, so the number you see is real." |
+
+---
+
+## 16. Vertical briefs
+
+### 16a. Construction — subcontractors / specialty trades / GCs
+
+- **Who feels the pain:** office manager / AP clerk / project coordinator keying
+  paperwork into accounting (QuickBooks, Sage, Foundation) and/or PM software
+  (Procore, Buildertrend).
+- **The spear document:** subcontractor invoices **or** progress claims (line-item
+  heavy, every sub formats differently → templates fail).
+- **Expand to:** lien waivers, certificates of insurance (COIs), material receipts,
+  POs, timesheets.
+- **Why now:** thin admin teams, rising volume, and Procore/Buildertrend adoption
+  means the *destination* exists but the data-entry gap is wide open.
+- **Language that lands:** "still hand-keying sub invoices and progress claims?",
+  "lien waiver and COI tracking eating your admin time?", "get the line items into
+  [system] without typing them."
+
+### 16b. Property management (residential & commercial)
+
+- **Who feels the pain:** AP/accounting manager and property managers keying into
+  AppFolio / Buildium / Yardi.
+- **The spear document:** AP invoices (utilities, vendors, maintenance) into the PM
+  system.
+- **Expand to:** leases (abstraction), rental applications, COIs, maintenance bills,
+  owner statements.
+- **Why now:** PM firms run on tight margins and high doc volume across many
+  properties; the systems are in place but invoice/lease entry is still manual.
+- **Language that lands:** "invoices piling up outside AppFolio/Buildium?", "lease
+  abstraction still done by hand?", "COIs from every vendor in a different format?"
+
+---
+
+## 17. First-post outlines (LinkedIn, ~1/week)
+
+**Post A — the teardown (best first post):**
+1. Hook: "I ran 40 real subcontractor invoices through AI extraction. Here's where
+   it broke."
+2. 3 concrete failure modes (merged line items, handwritten totals, weird date
+   formats).
+3. What fixed each (a tuned rule, a verification tool, a confidence threshold).
+4. The result: measured accuracy climbed from X% → Y%.
+5. Soft CTA: "If you key these by hand, I'll run a free audit on yours — comment
+   'audit' or DM me."
+
+**Post B — the ROI reframe:**
+- One customer/example: hours/week of keying → minutes of review; the $ math.
+- Point: the cost isn't the software, it's the salary hours you're already spending.
+
+**Post C — the trust/safety angle:**
+- "AI extraction isn't accurate enough for our books" is half right.
+- Explain the measured-accuracy + human-review-queue design: nothing uncertain goes
+  through silently. That's what makes it safe for finance docs.
+
+---
+
+## 18. Pilot onboarding checklist (forward-deployed setup)
+
+Once a prospect says yes:
+
+1. Create their agent(s) — one per document type (start with the spear).
+2. Collect 10–30 labelled samples per processor (their history = labels).
+3. Run train + `npm run tune` to a measured held-out accuracy; confirm it clears the
+   gate (per-field floors + review-rate ceiling).
+4. Configure the destination (Google Sheet / email / webhook) into their system.
+5. Set the confidence threshold with them (review-rate vs. straight-through trade-off).
+6. Send a handful of live docs; confirm they land correctly + the review queue works.
+7. Turn on billing (Stripe), agree the cap/overage, and schedule a 2-week check-in to
+   expand to the next document type.
