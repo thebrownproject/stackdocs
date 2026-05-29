@@ -17,7 +17,7 @@ function Check() {
       viewBox="0 0 20 20"
       fill="none"
       aria-hidden
-      className="mt-0.5 size-4 shrink-0 text-[var(--color-fluoro)]"
+      className="mt-0.5 size-4 shrink-0 text-primary"
     >
       <path
         d="M4 10.5l3.5 3.5L16 5.5"
@@ -47,7 +47,7 @@ function AuditCta({ className }: { className?: string }) {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-foreground)]">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Nav */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <span className="text-lg font-semibold tracking-tight">Trestle</span>
@@ -70,17 +70,17 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="mx-auto max-w-3xl px-6 pt-16 pb-20 text-center sm:pt-24">
-        <p className="text-sm font-medium uppercase tracking-widest text-[var(--color-fluoro)]">
+        <p className="text-sm font-medium uppercase tracking-widest text-primary">
           Measured-accuracy document extraction
         </p>
         <h1 className="mt-5 text-4xl font-semibold tracking-tight sm:text-6xl">
           Stop hand-keying documents.
           <br className="hidden sm:block" /> See the accuracy first.
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-[var(--color-foreground-subtle)]">
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-[var(--color-light-steel)]">
           Trestle turns your labelled documents into an extraction agent with a{" "}
-          <span className="text-[var(--color-foreground)]">measured accuracy number</span>{" "}
-          — then routes every document by confidence: straight into your system, or to
+          <span className="text-foreground">measured accuracy number</span> — then
+          routes every document by confidence: straight into your system, or to
           human review. No rules to write. Tuned to your formats.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -89,17 +89,14 @@ export default function HomePage() {
             <Link href="#how">How it works</Link>
           </Button>
         </div>
-        <p className="mt-6 text-sm text-[var(--color-muted-foreground)]">
+        <p className="mt-6 text-sm text-muted-foreground">
           Built for teams drowning in paperwork — lands in QuickBooks, Procore,
           AppFolio &amp; more.
         </p>
       </section>
 
       {/* How it works */}
-      <section
-        id="how"
-        className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)]"
-      >
+      <section id="how" className="border-t border-border bg-card">
         <div className="mx-auto max-w-5xl px-6 py-20">
           <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
             From a pile of paperwork to a measured processor
@@ -124,15 +121,11 @@ export default function HomePage() {
             ].map((s) => (
               <div
                 key={s.step}
-                className="rounded-xl border border-[var(--color-border)] bg-[var(--color-card)] p-6"
+                className="rounded-xl border border-border bg-background p-6"
               >
-                <div className="text-sm font-semibold text-[var(--color-fluoro)]">
-                  {s.step}
-                </div>
+                <div className="text-sm font-semibold text-primary">{s.step}</div>
                 <h3 className="mt-3 text-lg font-medium">{s.title}</h3>
-                <p className="mt-2 text-sm text-[var(--color-foreground-subtle)]">
-                  {s.body}
-                </p>
+                <p className="mt-2 text-sm text-muted-foreground">{s.body}</p>
               </div>
             ))}
           </div>
@@ -144,7 +137,7 @@ export default function HomePage() {
         <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
           Built for paperwork-heavy teams
         </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-[var(--color-foreground-subtle)]">
+        <p className="mx-auto mt-3 max-w-2xl text-center text-[var(--color-light-steel)]">
           You already have the systems. We remove the manual data entry between the
           documents and the software.
         </p>
@@ -161,17 +154,17 @@ export default function HomePage() {
           ].map((c) => (
             <div
               key={c.title}
-              className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-7"
+              className="rounded-xl border border-border bg-card p-7"
             >
               <h3 className="text-xl font-medium">{c.title}</h3>
-              <p className="mt-3 text-[var(--color-foreground-subtle)]">{c.body}</p>
+              <p className="mt-3 text-[var(--color-light-steel)]">{c.body}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Why different */}
-      <section className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)]">
+      <section className="border-t border-border bg-card">
         <div className="mx-auto max-w-5xl px-6 py-20">
           <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
             Not another generic OCR tool
@@ -195,9 +188,7 @@ export default function HomePage() {
                 <Check />
                 <div>
                   <h3 className="font-medium">{f.title}</h3>
-                  <p className="mt-1 text-sm text-[var(--color-foreground-subtle)]">
-                    {f.body}
-                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{f.body}</p>
                 </div>
               </div>
             ))}
@@ -210,7 +201,7 @@ export default function HomePage() {
         <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           See your accuracy number — free.
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-[var(--color-foreground-subtle)]">
+        <p className="mx-auto mt-4 max-w-xl text-[var(--color-light-steel)]">
           Send a few documents you key by hand. We&apos;ll send back a report showing
           exactly which fields we&apos;d auto-extract and at what accuracy. No account,
           no cost.
@@ -221,12 +212,12 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[var(--color-border)]">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-[var(--color-muted-foreground)] sm:flex-row">
+      <footer className="border-t border-border">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
           <span>Trestle — measured-accuracy document extraction</span>
           <SignedOut>
             <SignInButton mode="modal">
-              <button className="hover:text-[var(--color-foreground)]">Sign in</button>
+              <button className="hover:text-foreground">Sign in</button>
             </SignInButton>
           </SignedOut>
         </div>
