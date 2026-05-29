@@ -10,6 +10,7 @@ Go-to-market and landing-page assets for Stackdocs.
 | File | Purpose |
 |------|---------|
 | `GTM-OUTREACH-PLAYBOOK.md` | Current customer-acquisition playbook (forward-deployed, audit-led; construction + property-management SMBs) |
+| `TALLY-AUDIT-FORM-SETUP.md` | Step-by-step setup for the free-accuracy-audit intake form |
 | `DESIGN-INSPIRATION.md` | Visual references for landing page design |
 
 > The Stacks-era SMB-freemium strategy has been retired to
